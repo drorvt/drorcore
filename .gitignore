@@ -3,5 +3,4 @@
 /node_modules
 package-lock.json
 /build
-/.vscode
-*.js
+.vscode/launch.json

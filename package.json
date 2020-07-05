@@ -20,11 +20,12 @@
   "dependencies": {
     "@types/express": "^4.17.6",
     "app-root-path": "^3.0.0",
+    "winston": "^3.3.3",
     "express": "^4.17.1",
-    "typescript": "^3.9.6",
-    "winston": "^3.3.3"
-  },
-  "devDependencies": {
-    "@types/app-root-path": "^1.2.4"
+    "mysql": "^2.18.1",
+    "mysql-promise": "^5.0.0",
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.2.25",
+    "typescript": "^3.9.6"
   }
 }
