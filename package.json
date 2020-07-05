@@ -26,6 +26,7 @@
     "mysql-promise": "^5.0.0",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.25",
-    "typescript": "^3.9.6"
+    "typescript": "^3.9.6",
+    "shopify-api-node": "^3.3.2"
   }
 }
