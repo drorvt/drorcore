@@ -1,0 +1,20 @@
+{
+    "type": "mysql",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "username": "root",
+    "password": "root",
+    "database": "pdq",
+    "synchronize": false,
+    "logging": false,
+    "extra": { "insecureAuth": true },
+    "entities": [
+       "src/models/**/*.js"
+    ],
+    "migrations": [
+       "src/migration/**/*.ts"
+    ],
+    "subscribers": [
+       "src/subscriber/**/*.ts"
+    ]
+ }
