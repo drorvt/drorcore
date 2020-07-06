@@ -8,9 +8,9 @@ import { Product } from "../models/product";
 const products: Product[] = [{ id: 1 }, { id: 2 }];
 
 const shopify = new Shopify({
-  shopName: 'pdqv1-testing',
-  apiKey: 'cce3116572a7074529524513c23fc735',
-  password: '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'
+  shopName: process.env.SHOPIFY_SHOP_NAME || '',
+  apiKey: process.env.SHOPIFY_API_KEY || '',
+  password: process.env.SHOPIFY_API_PASSWORD || ''
 });
 
 /**
