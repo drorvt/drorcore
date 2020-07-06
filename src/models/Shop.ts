@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Users } from "./Users";
+import { User } from "./User";
 
 @Entity("shops", { schema: "pdq" })
 export class Shops {
@@ -28,6 +28,6 @@ export class Shops {
   @Column("int", { name: "owner_id", nullable: true })
   ownerId: number | null;
 
-  @OneToMany(() => Users, (users) => users.shop)
-  users: Users[];
+  @OneToMany(() => User, (users) => users.shop)
+  users: User[];
 }
