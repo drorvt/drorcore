@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import passport = require("passport");
 import { LoggedInUser } from "../models/LoggedInUser";
+import { authenticate } from "passport";
 const LocalStrategy = require("passport-local").Strategy;
 
 
@@ -15,6 +16,17 @@ export const ensureAuthenticated = (req:any, res:Response, next:() => void): voi
         return res.redirect('/login.html');
     }
 };
+
+export const authenticateUser = (req:Request, res: Response, next:()=>void): void => {
+    let authFunc = passport.authenticate('local', {successRedirect:'/', failureRedirect:'/login.html'});
+    authFunc(req, res, next);
+};
+
+export const logoffUser = (req:any, res:Response) => {
+    delete usersMap['_' + req.user.id];
+    req.logout();
+    res.redirect('/login.html');
+}
 
 passport.use(new LocalStrategy({
     usernameField: 'username',
