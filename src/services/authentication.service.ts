@@ -38,19 +38,13 @@ passport.use(new LocalStrategy({
   function(req:any, username:string, password:string, done:any) {
       findUser(username, password).then((user) => {
         if (user){
-            let user:LoggedInUser = new LoggedInUser('admin', 123);
-            usersMap['_' + user.id] = user;
+            let loggedInUser:LoggedInUser = new LoggedInUser(user.email, user.id);
+            usersMap['_' + loggedInUser.id] = loggedInUser;
             return done(null, user);
         }else{
             return done(null, null);
         }
       });
-
-        // if (username === 'admin' && password === 'admin'){
-        //     let user:LoggedInUser = new LoggedInUser('admin', 123);
-        //     usersMap['_' + user.id] = user;
-        //     return done(null, user);
-        // }
   }
   ));
   

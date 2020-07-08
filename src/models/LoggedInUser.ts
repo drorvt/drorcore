@@ -1,9 +1,9 @@
 export class LoggedInUser{
-    userName:string;
+    userName:string|null;
     id:number;
     loggedSince: Date;
 
-    constructor(userName:string, id:number){
+    constructor(userName:string|null, id:number){
         this.userName = userName;
         this.id = id;
         this.loggedSince = new Date();
