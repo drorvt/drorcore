@@ -1,8 +1,8 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./User";
 
 @Entity("shops", { schema: "pdq" })
-export class Shops {
+export class Shop {
   @PrimaryGeneratedColumn({ type: "int", name: "id" })
   id: number;
 
@@ -28,6 +28,6 @@ export class Shops {
   @Column("int", { name: "owner_id", nullable: true })
   ownerId: number | null;
 
-  @OneToMany(() => User, (users) => users.shop)
+  @ManyToMany(type => User, user => user.shops)
   users: User[];
 }

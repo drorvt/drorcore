@@ -2,10 +2,10 @@
     "type": "mysql",
     "host": "127.0.0.1",
     "port": 3306,
-    "username": "root",
-    "password": "root",
-    "database": "pdq",
-    "synchronize": false,
+    "username": "test",
+    "password": "test",
+    "database": "pdqtest",
+    "synchronize": true,
     "logging": false,
     "extra": { "insecureAuth": true },
     "entities": [
@@ -14,6 +14,10 @@
     "migrations": [
        "src/migration/**/*.ts"
     ],
+    "cli": {
+      "migrationsDir": "migration",
+      "entitiesDir": "src/models"
+  },
     "subscribers": [
        "src/subscriber/**/*.ts"
     ]
