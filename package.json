@@ -30,6 +30,7 @@
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "passport-session": "^1.0.2",
+    "pino": "^6.3.2",
     "reflect-metadata": "^0.1.13",
     "shopify-api-node": "^3.3.2",
     "typeorm": "^0.2.25",

@@ -1,9 +1,11 @@
 import express = require("express");
 import {ensureAuthenticated} from "./src/services/authentication.service";
+import {createConnection} from "typeorm";
 import path = require('path');
 import passport = require('passport');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+import {logger} from "./src/utils/logger";
 
 require('dotenv').config();
 console.log(process.env.SHOPIFY_SHOP_NAME);
@@ -32,6 +34,10 @@ app.get("/", function (req, res) {
 
 app.use(express.static(path.join(__dirname, '/public')));
 
+createConnection().then((con) => {
+    logger.info('info', 'created Database connection');
+});
+
  app.listen(3000, function () {
-     console.log("App is listening on port 3000!");
+    logger.info('info', 'App is listening on port 3000!');
 });
