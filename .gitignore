@@ -6,3 +6,5 @@ package-lock.json
 .vscode/launch.json
 *.js
 .env
+*.map
+*.js.map

@@ -3,10 +3,10 @@ import {
   Entity,
   Index,
   JoinColumn,
-  ManyToOne,
+  ManyToOne,ManyToMany, JoinTable,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Shops } from "./Shop";
+import { Shop } from "./Shop";
 
 @Index("users_FK", ["shopId"], {})
 @Entity("users", { schema: "pdq" })
@@ -42,10 +42,7 @@ export class User  {
   })
   created: Date | null;
 
-  @ManyToOne(() => Shops, (shops) => shops.users, {
-    onDelete: "NO ACTION",
-    onUpdate: "NO ACTION",
-  })
-  @JoinColumn([{ name: "shop_id", referencedColumnName: "id" }])
-  shop: Shops;
+  @ManyToMany(type => Shop, shop => shop.users)
+  @JoinTable()
+  shops: Shop[];
 }
