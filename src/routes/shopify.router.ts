@@ -3,7 +3,7 @@
  */
 import express, { Request, Response } from "express";
 import * as ShopifyService from '../services/shopify.service';
-import { Product } from "../models/product";
+import { Product } from "../models/Product";
 
 /**
  * Router Definition

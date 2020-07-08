@@ -1,5 +1,5 @@
 import Shopify from 'shopify-api-node';
-import { Product } from "../models/product";
+import { Product } from "../models/Product";
 
 /**
  * In-Memory Store
