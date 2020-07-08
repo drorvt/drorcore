@@ -3,7 +3,6 @@
 /node_modules
 package-lock.json
 /build
-.vscode/
+.vscode/launch.json
 *.js
-*.js.map
 .env
