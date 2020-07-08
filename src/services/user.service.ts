@@ -1,7 +1,7 @@
 import { User } from "../models/User";
 import { Shop } from "../models/Shop";
 
-import {getConnection} from "typeorm";
+import {getConnection, getRepository} from "typeorm";
 
 export const createUser = async (user:User) => {
     await getConnection().manager.save(user);
@@ -22,6 +22,6 @@ export const addUserToShop = async (user:User, shop:Shop) => {
 };
 
 
-export const getUser = async (userName:string) => {
-    
+export const findUser = async (email:string, password:string) => {
+    return getRepository(User).findOne({ where: { email: email, password: password } });
 };

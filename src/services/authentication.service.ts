@@ -1,8 +1,9 @@
 import express, { Request, Response } from "express";
 import passport = require("passport");
 import { LoggedInUser } from "../models/LoggedInUser";
-import { authenticate } from "passport";
 const LocalStrategy = require("passport-local").Strategy;
+import { findUser } from "./user.service";
+import { User } from "../models/User";
 
 
 export const ensureAuthenticated = (req:any, res:Response, next:() => void): void => {
@@ -35,11 +36,15 @@ passport.use(new LocalStrategy({
     session: true
   },
   function(req:any, username:string, password:string, done:any) {
-        if (username === 'admin' && password === 'admin'){
-            let user:LoggedInUser = new LoggedInUser('admin', 123);
-            usersMap['_' + user.id] = user;
+      findUser(username, password).then((user) => {
+        if (user){
+            let loggedInUser:LoggedInUser = new LoggedInUser(user.email, user.id);
+            usersMap['_' + loggedInUser.id] = loggedInUser;
             return done(null, user);
+        }else{
+            return done(null, null);
         }
+      });
   }
   ));
   

@@ -11,8 +11,6 @@ import { Shop } from "./Shop";
 @Index("users_FK", ["shopId"], {})
 @Entity("users", { schema: "pdq" })
 export class User  {
-  @Column("varchar", { name: "user_name", nullable: true, length: 100 })
-  userName: string | null;
 
   @Column("varchar", { name: "password", nullable: true, length: 100 })
   password: string | null;
