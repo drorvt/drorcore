@@ -48,8 +48,7 @@ export const initDB = async () => {
 
 export const buildDemoDB = async () => {
     let user:User = new User();
-    user.userName = "test@test.com";
-    user.email = user.userName;
+    user.email = "test@test.com";
     user.isAdmin = true;
     user.password = "xxx";
     await createUser(user);
