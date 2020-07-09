@@ -49,18 +49,21 @@ passport.use(new LocalStrategy({
                         usersMap['_' + loggedInUser.id] = loggedInUser;
                         if (req?.body?.store) {
                             if (user?.shops) {
-                                let shop: Shop | undefined = user.shops.find(shop => { shop.name == req.body.store });
+                                let shop: Shop | undefined = user.shops.find(shop => shop.name == req.body.store);
                                 if (shop) {
                                     loggedInUser.store = shop.id;
-                                    return done(null, user);
+                                    return done(null, loggedInUser);
                                 } else {
                                     return done(null, null);
                                 }
                             } else {
                                 return done(null, null);
                             }
-                        } else {    // Login user without shop
-                            return done(null, user);
+                        } else {    // Login user with no shop in the request. Set default shop if user has 1 shop
+                            if (user.shops && user.shops.length == 1){
+                                loggedInUser.store = user.shops[0].id;
+                            }
+                            return done(null, loggedInUser);
                         }
                     } else {    // password hashes don't match
                         return done(null, null);
