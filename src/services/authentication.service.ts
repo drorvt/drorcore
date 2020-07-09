@@ -4,26 +4,27 @@ import { LoggedInUser } from "../models/LoggedInUser";
 const LocalStrategy = require("passport-local").Strategy;
 import { findUser } from "./user.service";
 import { User } from "../models/User";
+import { Shop } from "../models/Shop";
 
 
-export const ensureAuthenticated = (req:any, res:Response, next:() => void): void => {
+export const ensureAuthenticated = (req: any, res: Response, next: () => void): void => {
     if (req.originalUrl === '/login' || req.originalUrl === '/login.html') {
         next();
         return;
-    }    
-    if(req.isAuthenticated()){
+    }
+    if (req.isAuthenticated()) {
         return next();
-    }else{        
+    } else {
         return res.redirect('/login.html');
     }
 };
 
-export const authenticateUser = (req:Request, res: Response, next:()=>void): void => {
-    let authFunc = passport.authenticate('local', {successRedirect:'/', failureRedirect:'/login.html'});
+export const authenticateUser = (req: Request, res: Response, next: () => void): void => {
+    let authFunc = passport.authenticate('local', { successRedirect: '/', failureRedirect: '/login.html' });
     authFunc(req, res, next);
 };
 
-export const logoffUser = (req:any, res:Response) => {
+export const logoffUser = (req: any, res: Response) => {
     delete usersMap['_' + req.user.id];
     req.logout();
     res.redirect('/login.html');
@@ -34,27 +35,42 @@ passport.use(new LocalStrategy({
     passwordField: 'password',
     passReqToCallback: true,
     session: true
-  },
-  function(req:any, username:string, password:string, done:any) {
-      findUser(username, password).then((user) => {
-        if (user){
-            let loggedInUser:LoggedInUser = new LoggedInUser(user.email, user.id);
-            usersMap['_' + loggedInUser.id] = loggedInUser;
-            return done(null, user);
-        }else{
-            return done(null, null);
-        }
-      });
-  }
-  ));
-  
-  passport.serializeUser(function(user:LoggedInUser, done){
-    done(null, user.id);
-  });
-  
-  passport.deserializeUser(function(id, done){
-    let user:LoggedInUser = usersMap['_'+id];
-    done(null, user);  
-  });
+},
+    function (req: any, username: string, password: string, done: any) {
+        findUser(username, password).then((user) => {
+            if (user) {
+                if (req?.body?.store) {
+                    if (user?.shops) {
+                        let shop: Shop | undefined = user.shops.find(shop => { shop.name == req.body.store });
+                        if (shop) {
+                            let loggedInUser: LoggedInUser = new LoggedInUser(user.email, user.id, req.body.store);
+                            usersMap['_' + loggedInUser.id] = loggedInUser;
+                            return done(null, user);
+                        } else {
+                            return done(null, null);
+                        }
+                    } else {
+                        return done(null, null);
+                    }
+                } else {    // Login user without shop
+                    let loggedInUser: LoggedInUser = new LoggedInUser(user.email, user.id, undefined);
+                    usersMap['_' + loggedInUser.id] = loggedInUser;
+                    return done(null, user);
+                }
+            } else {
+                return done(null, null);
+            }
+        });
+    }
+));
 
-export const usersMap:any = {};
+passport.serializeUser(function (user: LoggedInUser, done) {
+    done(null, user.id);
+});
+
+passport.deserializeUser(function (id, done) {
+    let user: LoggedInUser = usersMap['_' + id];
+    done(null, user);
+});
+
+export const usersMap: any = {};

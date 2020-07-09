@@ -23,5 +23,5 @@ export const addUserToShop = async (user:User, shop:Shop) => {
 
 
 export const findUser = async (email:string, password:string) => {
-    return getRepository(User).findOne({ where: { email: email, password: password } });
+    return getRepository(User).findOne({ where: { email: email, password: password}, relations:['shops'] });
 };
