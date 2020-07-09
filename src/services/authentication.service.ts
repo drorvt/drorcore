@@ -39,12 +39,16 @@ passport.use(new LocalStrategy({
     function (req: any, username: string, password: string, done: any) {
         findUser(username, password).then((user) => {
             if (user) {
+                let loggedInUser: LoggedInUser = new LoggedInUser(user.email, user.id);
+                if (user.isAdmin) loggedInUser.roles.push("admin");
+                if (user.isWrite) loggedInUser.roles.push("write");
+
+                usersMap['_' + loggedInUser.id] = loggedInUser;
                 if (req?.body?.store) {
                     if (user?.shops) {
                         let shop: Shop | undefined = user.shops.find(shop => { shop.name == req.body.store });
                         if (shop) {
-                            let loggedInUser: LoggedInUser = new LoggedInUser(user.email, user.id, req.body.store);
-                            usersMap['_' + loggedInUser.id] = loggedInUser;
+                            loggedInUser.store = shop.id;
                             return done(null, user);
                         } else {
                             return done(null, null);
@@ -53,8 +57,6 @@ passport.use(new LocalStrategy({
                         return done(null, null);
                     }
                 } else {    // Login user without shop
-                    let loggedInUser: LoggedInUser = new LoggedInUser(user.email, user.id, undefined);
-                    usersMap['_' + loggedInUser.id] = loggedInUser;
                     return done(null, user);
                 }
             } else {
