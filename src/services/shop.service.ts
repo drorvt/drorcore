@@ -1,21 +1,18 @@
-import { User } from "../models/User";
-import { Shop } from "../models/Shop";
+import { User } from '../models/User';
+import { Shop } from '../models/Shop';
 
-import {getConnection} from "typeorm";
+import { getConnection } from 'typeorm';
 
-export const createShop = async (shop:Shop) => {
+export const createShop = async (shop: Shop) => {
     await getConnection().manager.save(shop);
 };
 
-export const addShopToUser = async (shop:Shop, user:User) => {
-    if (user && shop){
+export const addShopToUser = async (shop: Shop, user: User) => {
+    if (user && shop) {
         user.shops.push(shop);
         shop.users.push(user);
-        await getConnection().manager.save([shop,user]);
+        await getConnection().manager.save([shop, user]);
     }
 };
 
-
-export const getUser = async (userName:string) => {
-    
-};
+export const getUser = async (userName: string) => {};
