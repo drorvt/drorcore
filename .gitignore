@@ -5,6 +5,7 @@ package-lock.json
 /build
 .vscode/launch.json
 *.js
+!prettier.config.js
 .env
 *.map
 *.js.map
