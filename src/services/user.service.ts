@@ -1,9 +1,10 @@
 import { User } from "../models/User";
 import { Shop } from "../models/Shop";
-
 import {getConnection, getRepository} from "typeorm";
+const bcrypt = require('bcryptjs');
 
 export const createUser = async (user:User) => {
+    user.password = bcrypt.hashSync(user.password, 10);
     await getConnection().manager.save(user);
 };
 
@@ -16,12 +17,11 @@ export const addUserToShop = async (user:User, shop:Shop) => {
             shop.users = [];
         }
         user.shops.push(shop);
-        // shop.users.push(user);
         await getConnection().manager.save([shop,user]);
     }
 };
 
 
-export const findUser = async (email:string, password:string) => {
-    return getRepository(User).findOne({ where: { email: email, password: password}, relations:['shops'] });
+export const findUser = async (email:string) => {
+    return getRepository(User).findOne({ where: { email: email}, relations:['shops'] });
 };
