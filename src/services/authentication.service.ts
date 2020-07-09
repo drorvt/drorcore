@@ -5,7 +5,7 @@ const LocalStrategy = require("passport-local").Strategy;
 import { findUser } from "./user.service";
 import { User } from "../models/User";
 import { Shop } from "../models/Shop";
-
+const bcrypt = require('bcryptjs');
 
 export const ensureAuthenticated = (req: any, res: Response, next: () => void): void => {
     if (req.originalUrl === '/login' || req.originalUrl === '/login.html') {
@@ -37,7 +37,8 @@ passport.use(new LocalStrategy({
     session: true
 },
     function (req: any, username: string, password: string, done: any) {
-        findUser(username, password).then((user) => {
+        let hasedPassword:string = bcrypt.hashSync(password, 10);
+        findUser(username, hasedPassword).then((user) => {
             if (user) {
                 let loggedInUser: LoggedInUser = new LoggedInUser(user.email, user.id);
                 if (user.isAdmin) loggedInUser.roles.push("admin");
