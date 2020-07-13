@@ -1,3 +1,4 @@
+import { ProductTag } from './ProductTag';
 import {
     Column,
     Entity,
@@ -5,12 +6,14 @@ import {
     PrimaryGeneratedColumn,
     JoinTable
 } from 'typeorm';
-import { ProductTag } from './ProductTag';
 
-@Entity('products', { schema: 'pdq' })
+@Entity()
 export class Product {
     @PrimaryGeneratedColumn()
     id: number;
+
+    @Column({ type: 'bigint', unique: true })
+    shopifyId: number;
 
     @Column('int')
     shopId: number | null;

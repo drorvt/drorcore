@@ -1,18 +1,19 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Product } from './Product';
+import {
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    getConnection,
+    In,
+    getRepository
+} from 'typeorm';
 
 @Entity()
 export class ProductTag {
-    constructor(name: string) {
-        this.name = name;
-    }
-
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column('string')
+    @Column('varchar')
     name: string | null;
 
-    @ManyToMany(type => Product, product => product.productTags)
-    products: Product[] | null;
+    
 }
