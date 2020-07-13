@@ -1,7 +1,10 @@
+import _, { trim } from 'lodash';
 import Shopify from 'shopify-api-node';
-import { Product } from '../models/Product';
-import { getConnection } from 'typeorm';
-import { ProductTag } from '../models/ProductTag';
+import * as Product from '../models/Product';
+import * as ProductTag from '../models/ProductTag';
+import * as ProductsService from '../services/products.service';
+import * as ProductsTagService from '../services/product-tags.service';
+import { logger } from '../utils/logger';
 
 /**
  * In-Memory Store
@@ -18,69 +21,50 @@ const shopify = new Shopify({
  * Service Methods
  */
 
-function convertShopifyProductList(arr: Shopify.IProduct[]): Product[] {
-    return arr.map(x => {
-        return convertShopifyProduct(x);
-    });
+export async function parseShopifyProduct(
+    prod: Shopify.IProduct
+): Promise<Product.Product> {
+    const productTagsStringArr = prod.tags.split(',').map(x => x.trim());
+    const res = new Product.Product();
+    res.shopifyId = prod.id;
+    res.name = prod.title;
+    res.shopId = 1; //TODO: Process shop ID
+    res.productType = prod.product_type;
+    res.updated = new Date(prod.updated_at);
+    res.productTags = await ProductsTagService.findByNames(
+        productTagsStringArr
+    ); //TODO: Scaling problem, maybe inject tags to method?
+    return res;
 }
 
-function convertShopifyProduct(prod: Shopify.IProduct): Product {
-    return {
-        id: prod.id,
-        name: prod.title,
-        shopId: 1, //TODO: Process shop ID
-        productType: prod.product_type,
-        updated: new Date(prod.updated_at),
-        productTags: prod.tags
-            .split(',')
-            .map(x => x.trim())
-            .map(x => new ProductTag(x))
-    };
+export function parseShopifyProductTag(
+    productTag: string
+): ProductTag.ProductTag {
+    const res = new ProductTag.ProductTag();
+    res.name = productTag;
+    return res;
 }
 
-export const syncProducts = async () => {
-    return convertShopifyProductList(
-        await shopify.product.list({ limit: 250 })
+export async function syncShopify() {
+    // Consider using Bluebird for Promise.map
+
+    const productList = await shopify.product.list();
+    const productTagStringList = productList.map(product =>
+        product.tags.split(',').map(tag => tag.trim())
     );
-};
-
-export const getAllProducts = async (): Promise<Product[]> => {
-    return convertShopifyProductList(
-        await shopify.product.list({ limit: 250 })
+    const uniqueTagStringList = _.chain(productTagStringList) //lodash magic here
+        .flatten()
+        .uniq()
+        .value();
+    const uniqueTagList = uniqueTagStringList.map(tagString =>
+        parseShopifyProductTag(tagString)
     );
-};
+    ProductsTagService.saveArr(uniqueTagList);
+    logger.info('Product tags synced with Shopify service');
 
-export const findProduct = async (productId: number): Promise<Product> => {
-    try {
-        return convertShopifyProduct(await shopify.product.get(productId));
-    } catch (e) {
-        throw new Error('No record found');
-    }
-};
-
-export const getProductTags = (productId: number): Promise<String[]> => {
-    try {
-        // split and trim tags
-        return shopify.product
-            .get(productId)
-            .then(x => x.tags.split(',').map(i => i.trim()));
-    } catch (e) {
-        throw new Error('Error getting tags for product ' + productId);
-    }
-};
-
-export const getAllTags = async (): Promise<String[]> => {
-    try {
-        // get all tags, split, trim, and flatten
-        const tags = (await shopify.product.list())
-            .map(x => x.tags.split(',').map(x => x.trim()))
-            .reduce((x, y) => x.concat(y), []);
-
-        // return unique values:
-        return tags.filter(function (item, pos, self) {
-            return self.indexOf(item) == pos;
-        });
-    } catch (e) {
-        throw new Error('Error getting tags');
-    }
-};
+    //TODO: No tags in stored objects
+    ProductsService.saveArr(
+        await Promise.all(productList.map(x => parseShopifyProduct(x)))
+    );
+    logger.info('Products synced with Shopify service');
+}
