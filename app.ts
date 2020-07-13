@@ -1,4 +1,5 @@
 import express = require('express');
+require('dotenv').config();
 import { ensureAuthenticated } from './src/services/authentication.service';
 import { createConnection } from 'typeorm';
 import path = require('path');
@@ -8,13 +9,13 @@ const session = require('express-session');
 import { logger } from './src/utils/logger';
 import { initDB, buildDemoDB } from './tests/my-test';
 
-require('dotenv').config();
 console.log(process.env.SHOPIFY_SHOP_NAME);
 const production: any = process.env.PRODOCTION;
 console.log('Production: ' + process.env.PRODOCTION);
 
 import { shopifyRouter } from './src/routes/shopify.router';
 import { userRouter } from './src/routes/user.router';
+import { syncShopify } from './src/services/shopify.service';
 
 const app: express.Application = express();
 
@@ -47,9 +48,14 @@ const startServer = async () => {
         await initDB();
     }
 
-    await createConnection().then(con => {
-        logger.info('info', 'created Database connection');
-    });
+    // .then(con => {
+    //     logger.info('info', 'created Database connection');
+    // }); 
+    // redundant "then"
+    await createConnection();
+    logger.info('info', 'created Database connection');
+
+    await syncShopify();
 
     await buildDemoDB();
 
