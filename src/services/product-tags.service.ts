@@ -1,23 +1,14 @@
 import { getConnection, In } from 'typeorm';
 import { ProductTag } from '../models/ProductTag';
 import { logger } from '../utils/logger';
-import { Product } from '../models/Product';
 import { findProduct } from './products.service';
 
-export function save(productTag: ProductTag) {
-    getConnection()
-        .getRepository(ProductTag)
-        .save(productTag)
-        .then(x =>
-            logger.info('Product tag has been added to database. ID: ' + x.id)
-        );
+export function save(productTag: ProductTag): Promise<ProductTag> {
+    return getConnection().getRepository(ProductTag).save(productTag);
 }
 
-export function saveArr(productTags: ProductTag[]) {
-    getConnection()
-        .getRepository(ProductTag)
-        .save(productTags)
-        .then(x => logger.info('Saved product tags to database. IDs: ' + x));
+export function saveArr(productTags: ProductTag[]): Promise<ProductTag[]> {
+    return getConnection().getRepository(ProductTag).save(productTags);
 }
 
 export function remove(productTag: ProductTag) {
@@ -53,11 +44,12 @@ export async function findProductTag(
 }
 
 export async function findByNames(tagNames: string[]): Promise<ProductTag[]> {
-    return await getConnection()
+    const res = await getConnection()
         .getRepository(ProductTag)
         .find({
             name: In(tagNames)
         });
+    return res;
 }
 
 export function getAllProductTags(): Promise<ProductTag[]> {
@@ -72,7 +64,11 @@ export async function getProductTags(
         if (res) {
             return res.productTags;
         } else {
-            throw new Error('Error getting tags for product ' + productId);
+            throw new Error(
+                'Error getting tags for product ' +
+                    productId +
+                    '. Product not found.'
+            );
         }
     } catch (e) {
         throw new Error('Error getting tags for product ' + productId);
