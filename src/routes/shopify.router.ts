@@ -23,14 +23,17 @@ export const shopifyRouter = express.Router();
 
 // GET items/
 
-shopifyRouter.get('/getAllProducts', async (req: Request, res: Response) => {
-    try {
-        // const result = await ShopifyService.getAllProducts();
-        res.status(200).send(await getAllProducts());
-    } catch (e) {
-        res.status(404).send(e.message);
+shopifyRouter.get(
+    '/products/getAllProducts',
+    async (req: Request, res: Response) => {
+        try {
+            // const result = await ShopifyService.getAllProducts();
+            res.status(200).send(await getAllProducts());
+        } catch (e) {
+            res.status(404).send(e.message);
+        }
     }
-});
+);
 
 //get product by ID:
 shopifyRouter.get(
@@ -66,13 +69,8 @@ shopifyRouter.get('/tags/:productId', async (req: Request, res: Response) => {
     try {
         const productId = +req.params.productId;
         if (productId) {
-            const productTag = await findProduct(productId);
-            if (productTag) {
-                const tags = await getProductTags(productId);
-                res.status(200).send(tags);
-            } else {
-                res.status(500).send('Product not found');
-            }
+            const tags = await getProductTags(productId);
+            res.status(200).send(tags);
         } else {
             res.status(400).send('Invalid product ID');
         }
