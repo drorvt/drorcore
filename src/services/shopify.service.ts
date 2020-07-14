@@ -31,7 +31,7 @@ export async function parseShopifyProduct(
     res.shopId = 1; //TODO: Process shop ID
     res.productType = prod.product_type;
     res.updated = new Date(prod.updated_at);
-    res.productTags = await ProductsTagService.findByNames(
+    res.productTags = await ProductsTagService.findByProductTagNames(
         productTagsStringArr
     ); //TODO: Scaling problem, maybe inject tags to method?
     return res;
@@ -59,11 +59,11 @@ export async function syncShopify() {
     const uniqueTagList = uniqueTagStringList.map(tagString =>
         parseShopifyProductTag(tagString)
     );
-    ProductsTagService.saveArr(uniqueTagList);
+    await ProductsTagService.saveProductTagArr(uniqueTagList);
     logger.info('Product tags synced with Shopify service');
 
     //TODO: No tags in stored objects
-    ProductsService.saveArr(
+    await ProductsService.saveProductArr(
         await Promise.all(productList.map(x => parseShopifyProduct(x)))
     );
     logger.info('Products synced with Shopify service');
