@@ -3,15 +3,15 @@ import { ProductTag } from '../models/ProductTag';
 import { logger } from '../utils/logger';
 import { findProduct } from './products.service';
 
-export function save(productTag: ProductTag): Promise<ProductTag> {
+export function saveProductTag(productTag: ProductTag): Promise<ProductTag> {
     return getConnection().getRepository(ProductTag).save(productTag);
 }
 
-export function saveArr(productTags: ProductTag[]): Promise<ProductTag[]> {
+export function saveProductTagArr(productTags: ProductTag[]): Promise<ProductTag[]> {
     return getConnection().getRepository(ProductTag).save(productTags);
 }
 
-export function remove(productTag: ProductTag) {
+export function removeProductTag(productTag: ProductTag) {
     getConnection()
         .getRepository(ProductTag)
         .remove(productTag)
@@ -22,7 +22,7 @@ export function remove(productTag: ProductTag) {
         );
 }
 
-export function update(productTag: ProductTag, newProductTag: ProductTag) {
+export function updateProductTag(productTag: ProductTag, newProductTag: ProductTag) {
     getConnection()
         .getRepository(ProductTag)
         .update(productTag, newProductTag)
@@ -39,11 +39,11 @@ export async function findProductTag(
 ): Promise<ProductTag | undefined> {
     const res = await getConnection()
         .getRepository(ProductTag)
-        .findOne({ id: productTagId });
+        .findOne({ where: { id: productTagId } });
     return res;
 }
 
-export async function findByNames(tagNames: string[]): Promise<ProductTag[]> {
+export async function findByProductTagNames(tagNames: string[]): Promise<ProductTag[]> {
     const res = await getConnection()
         .getRepository(ProductTag)
         .find({
@@ -56,13 +56,13 @@ export function getAllProductTags(): Promise<ProductTag[]> {
     return getConnection().getRepository(ProductTag).find();
 }
 
-export async function getProductTags(
+export async function getProductTagsByProductId(
     productId: number
 ): Promise<ProductTag[] | null> {
     try {
-        const res = await findProduct(productId);
-        if (res) {
-            return res.productTags;
+        const product = await findProduct(productId);
+        if (product) {
+            return product.productTags;
         } else {
             throw new Error(
                 'Error getting tags for product ' +

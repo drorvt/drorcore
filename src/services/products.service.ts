@@ -1,17 +1,19 @@
 import * as ShopifyService from '../services/shopify.service';
-import { getConnection } from 'typeorm';
+import { getConnection, createQueryBuilder, In } from 'typeorm';
 import { Product } from '../models/Product';
 import { logger } from '../utils/logger';
+import { ProductTag } from '../models/ProductTag';
+import { findProductTag } from './product-tags.service';
 
-export function save(product: Product): Promise<Product> {
+export function saveProduct(product: Product): Promise<Product> {
     return getConnection().manager.save(product);
 }
 
-export function saveArr(products: Product[]): Promise<Product[]> {
+export function saveProductArr(products: Product[]): Promise<Product[]> {
     return getConnection().getRepository(Product).save(products);
 }
 
-export function remove(product: Product) {
+export function removeProduct(product: Product) {
     getConnection()
         .getRepository(Product)
         .remove(product)
@@ -20,7 +22,7 @@ export function remove(product: Product) {
         );
 }
 
-export function update(product: Product, newProduct: Product) {
+export function updateProduct(product: Product, newProduct: Product) {
     getConnection()
         .getRepository(Product)
         .update(product, newProduct)
@@ -39,9 +41,37 @@ export async function getAllProducts(): Promise<Product[]> {
         logger.info('No products in database. Resyncing.'); //TODO: add limit for resyncing.
         await ShopifyService.syncShopify();
     }
-    return getConnection()
+    const res = await getConnection()
         .getRepository(Product)
         .find({ relations: ['productTags'] });
+    return res;
+}
+
+export async function getProductsByTagId(
+    productTagId: number
+): Promise<Product[] | null> {
+    try {
+        logger.info('Get all products with tag ID ' + productTagId);
+
+        //YB: Best I could do w/ typeORM - finds the products but doesn't nest the ProductTags properly.
+        const productTag = await findProductTag(productTagId);
+        if (productTag) {
+            return getConnection()
+                .getRepository(Product)
+                .createQueryBuilder()
+                .relation(ProductTag, 'products')
+                .of(productTag)
+                .loadMany();
+        } else {
+            throw new Error(
+                'Error getting products for product tag ' +
+                    productTagId +
+                    '. Product tag not found.'
+            );
+        }
+    } catch (e) {
+        throw new Error('No records found');
+    }
 }
 
 export async function findProduct(
