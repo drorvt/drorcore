@@ -1,11 +1,5 @@
-import {
-    Column,
-    Entity,
-    PrimaryGeneratedColumn,
-    getConnection,
-    In,
-    getRepository
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
+import { Product } from './Product';
 
 @Entity()
 export class ProductTag {
@@ -15,5 +9,6 @@ export class ProductTag {
     @Column('varchar')
     name: string | null;
 
-    
+    @ManyToMany(type => Product, product => product.productTags)
+    products: Product[] | null;
 }
