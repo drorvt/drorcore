@@ -1,22 +1,14 @@
 import * as ShopifyService from '../services/shopify.service';
 import { getConnection } from 'typeorm';
 import { Product } from '../models/Product';
-import { ProductTag } from '../models/ProductTag';
 import { logger } from '../utils/logger';
 
-export function save(product: Product) {
-    getConnection()
-        .manager.save(product)
-        .then(x =>
-            logger.info('Product has been added to database. ID: ' + x.id)
-        );
+export function save(product: Product): Promise<Product> {
+    return getConnection().manager.save(product);
 }
 
-export function saveArr(products: Product[]) {
-    getConnection()
-        .getRepository(Product)
-        .save(products)
-        .then(x => logger.info('Saved products to database. IDs: ' + x));
+export function saveArr(products: Product[]): Promise<Product[]> {
+    return getConnection().getRepository(Product).save(products);
 }
 
 export function remove(product: Product) {
@@ -42,12 +34,14 @@ export function update(product: Product, newProduct: Product) {
 
 export async function getAllProducts(): Promise<Product[]> {
     logger.info('Get all products');
-    // const productNo = await Product.countProducts();
-    if ((await countProducts()) == 0) {
+    const productCount = await countProducts();
+    if (productCount == 0) {
         logger.info('No products in database. Resyncing.'); //TODO: add limit for resyncing.
         await ShopifyService.syncShopify();
     }
-    return getConnection().getRepository(Product).find();
+    return getConnection()
+        .getRepository(Product)
+        .find({ relations: ['productTags'] });
 }
 
 export async function findProduct(
@@ -57,7 +51,10 @@ export async function findProduct(
     try {
         const res = await getConnection()
             .getRepository(Product)
-            .findOne({ where: { shopifyId: productId } }); //Consider findByIds
+            .findOne({
+                where: { shopifyId: productId },
+                relations: ['productTags']
+            }); //Consider findByIds
         return res;
     } catch (e) {
         throw new Error('No record found');
