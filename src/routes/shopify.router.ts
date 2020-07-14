@@ -2,15 +2,26 @@
  * Required External Modules and Interfaces
  */
 import express, { Request, Response } from 'express';
+import { query, check, validationResult } from 'express-validator/check';
+
 import * as ShopifyService from '../services/shopify.service';
 import { Product } from '../models/Product';
 import { logger } from '../utils/logger';
-import { getAllProducts, findProduct } from '../services/products.service';
+import {
+    getAllProducts,
+    findProduct,
+    getProductsByTagId,
+    removeProduct
+} from '../services/products.service';
 import {
     findProductTag,
-    getProductTags,
-    getAllProductTags
+    getProductTagsByProductId,
+    getAllProductTags,
+    removeProductTag
 } from '../services/product-tags.service';
+import { ProductTag } from '../models/ProductTag';
+import e from 'express';
+import { FindOperator } from 'typeorm';
 
 /**
  * Router Definition
@@ -22,7 +33,7 @@ export const shopifyRouter = express.Router();
  */
 
 // GET items/
-
+// Product methods:
 shopifyRouter.get(
     '/products/getAllProducts',
     async (req: Request, res: Response) => {
@@ -35,19 +46,27 @@ shopifyRouter.get(
     }
 );
 
-//get product by ID:
+// Get products by tag:
 shopifyRouter.get(
-    '/products/:productId',
+    '/products',
+    [query('productTagId').notEmpty().isNumeric()],
     async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(422).json({ errors: errors.array() }).send();
+        }
         try {
-            //+ parses string to number
-            const product: Product | undefined = await findProduct(
-                +req.params.productId
-            );
-            if (product) {
-                res.status(200).send(product);
+            if (req.query.productTagId) {
+                //+ parses string to number
+                const productTagId = +req.query.productTagId;
+                if (productTagId) {
+                    const tags = await getProductsByTagId(productTagId);
+                    res.status(200).send(tags);
+                } else {
+                    res.status(500).send('Products not found');
+                }
             } else {
-                res.status(500).send('Product not found');
+                res.status(400).send('Invalid product ID');
             }
         } catch (e) {
             res.status(404).send(e.message);
@@ -55,6 +74,36 @@ shopifyRouter.get(
     }
 );
 
+//get product by ID:
+shopifyRouter.get(
+    '/products',
+    [query('productId').notEmpty().isNumeric()],
+    async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(422).json({ errors: errors.array() }).send();
+        }
+        try {
+            if (req.query.productId) {
+                //+ parses string to number
+                const product: Product | undefined = await findProduct(
+                    +req.query.productId
+                );
+                if (product) {
+                    res.status(200).send(product);
+                } else {
+                    res.status(500).send('Product not found');
+                }
+            } else {
+                res.status(400).send('Invalid product ID');
+            }
+        } catch (e) {
+            res.status(404).send(e.message);
+        }
+    }
+);
+
+//ProductTag methods:
 shopifyRouter.get('/tags/getAllTags', async (req: Request, res: Response) => {
     try {
         const tags = await getAllProductTags();
@@ -65,22 +114,96 @@ shopifyRouter.get('/tags/getAllTags', async (req: Request, res: Response) => {
 });
 
 //get all tags for product
-shopifyRouter.get('/tags/:productId', async (req: Request, res: Response) => {
-    try {
-        const productId = +req.params.productId;
-        if (productId) {
-            const tags = await getProductTags(productId);
-            res.status(200).send(tags);
-        } else {
-            res.status(400).send('Invalid product ID');
+shopifyRouter.get(
+    '/tags',
+    [query('productId').notEmpty().isNumeric()],
+    async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(422).json({ errors: errors.array() }).send();
         }
-    } catch (e) {
-        res.status(404).send(e.message);
+        try {
+            if (req.query.productId) {
+                const productId = +req.query.productId;
+                if (productId) {
+                    const tags = await getProductTagsByProductId(productId);
+                    res.status(200).send(tags);
+                } else {
+                    res.status(400).send('Invalid product ID');
+                }
+            } else {
+                res.status(400).send('Invalid product ID');
+            }
+        } catch (e) {
+            res.status(404).send(e.message);
+        }
     }
-});
+);
 
 //   // POST items/
+// Update product
+//Update product tag
 
 //   // PUT items/
+// Add product
+//add productTag
 
-//   // DELETE items/:id
+// DELETE items/
+//Delete product tag
+shopifyRouter.delete(
+    '/tags',
+    [query('productTagId').notEmpty().isNumeric()],
+    async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(422).json({ errors: errors.array() }).send();
+        }
+        try {
+            if (req.query.productTagId) {
+                const productTag: ProductTag | undefined = await findProductTag(
+                    +req.query.productTagId
+                );
+                if (productTag) {
+                    removeProductTag(productTag);
+                    res.status(200).send(productTag);
+                } else {
+                    res.status(400).send('Invalid productTag ID');
+                }
+            } else {
+                res.status(400).send('Invalid productTag ID');
+            }
+        } catch (e) {
+            res.status(404).send(e.message);
+        }
+    }
+);
+
+// Delete product
+shopifyRouter.delete(
+    '/products',
+    [query('productId').notEmpty().isNumeric()],
+    async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(422).json({ errors: errors.array() }).send();
+        }
+        try {
+            if (req.query.productId) {
+                //+ parses string to number
+                const product: Product | undefined = await findProduct(
+                    +req.query.productId
+                );
+                if (product) {
+                    removeProduct(product);
+                    res.status(200).send(product);
+                } else {
+                    res.status(500).send('Product not found');
+                }
+            } else {
+                res.status(400).send('Invalid productTag ID');
+            }
+        } catch (e) {
+            res.status(404).send(e.message);
+        }
+    }
+);
