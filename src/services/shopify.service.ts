@@ -21,30 +21,10 @@ const shopify = new Shopify({
  * Service Methods
  */
 
-export async function parseShopifyProduct(
-    prod: Shopify.IProduct
-): Promise<Product.Product> {
-    const productTagsStringArr = prod.tags.split(',').map(x => x.trim());
-    const res = new Product.Product();
-    res.shopifyId = prod.id;
-    res.name = prod.title;
-    res.shopId = 1; //TODO: Process shop ID
-    res.productType = prod.product_type;
-    res.updated = new Date(prod.updated_at);
-    res.productTags = await ProductsTagService.findByProductTagNames(
-        productTagsStringArr
-    ); //TODO: Scaling problem, maybe inject tags to method?
-    return res;
-}
 
-export function parseShopifyProductTag(
-    productTag: string
-): ProductTag.ProductTag {
-    const res = new ProductTag.ProductTag();
-    res.name = productTag;
-    return res;
-}
 
+
+// Sync all Shopify products and tags
 export async function syncShopify() {
     // Consider using Bluebird for Promise.map
 
@@ -72,6 +52,7 @@ export async function syncShopify() {
     logger.info('Products synced with Shopify service');
 }
 
+//Sync single product
 export async function syncProduct(
     prod: Product.Product
 ): Promise<Product.Product> {
@@ -85,6 +66,7 @@ export async function syncProduct(
         .then(fetchedProduct => ProductsService.saveProduct(fetchedProduct));
 }
 
+// Sync product array
 export async function syncProductArr(
     products: Product.Product[]
 ): Promise<Product.Product[]> {

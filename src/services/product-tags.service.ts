@@ -7,7 +7,9 @@ export function saveProductTag(productTag: ProductTag): Promise<ProductTag> {
     return getConnection().getRepository(ProductTag).save(productTag);
 }
 
-export function saveProductTagArr(productTags: ProductTag[]): Promise<ProductTag[]> {
+export function saveProductTagArr(
+    productTags: ProductTag[]
+): Promise<ProductTag[]> {
     return getConnection().getRepository(ProductTag).save(productTags);
 }
 
@@ -22,7 +24,10 @@ export function removeProductTag(productTag: ProductTag) {
         );
 }
 
-export function updateProductTag(productTag: ProductTag, newProductTag: ProductTag) {
+export function updateProductTag(
+    productTag: ProductTag,
+    newProductTag: ProductTag
+) {
     getConnection()
         .getRepository(ProductTag)
         .update(productTag, newProductTag)
@@ -43,7 +48,9 @@ export async function findProductTag(
     return res;
 }
 
-export async function findByProductTagNames(tagNames: string[]): Promise<ProductTag[]> {
+export async function findByProductTagNames(
+    tagNames: string[]
+): Promise<ProductTag[]> {
     const res = await getConnection()
         .getRepository(ProductTag)
         .find({
@@ -73,4 +80,10 @@ export async function getProductTagsByProductId(
     } catch (e) {
         throw new Error('Error getting tags for product ' + productId);
     }
+}
+
+export function parseShopifyProductTag(productTag: string): ProductTag {
+    const res = new ProductTag();
+    res.name = productTag;
+    return res;
 }

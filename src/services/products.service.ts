@@ -3,7 +3,8 @@ import { getConnection, createQueryBuilder, In } from 'typeorm';
 import { Product } from '../models/Product';
 import { logger } from '../utils/logger';
 import { ProductTag } from '../models/ProductTag';
-import { findProductTag } from './product-tags.service';
+import { findProductTag, findByProductTagNames } from './product-tags.service';
+import Shopify from 'shopify-api-node';
 
 export function saveProduct(product: Product): Promise<Product> {
     return getConnection().manager.save(product);
@@ -93,4 +94,20 @@ export async function findProduct(
 
 export function countProducts(): Promise<number> {
     return getConnection().getRepository(Product).count();
+}
+
+export async function parseShopifyProduct(
+    prod: Shopify.IProduct
+): Promise<Product> {
+    const productTagsStringArr = prod.tags.split(',').map(x => x.trim());
+    const res = new Product();
+    res.shopifyId = prod.id;
+    res.name = prod.title;
+    res.shopId = 1; //TODO: Process shop ID
+    res.productType = prod.product_type;
+    res.updated = new Date(prod.updated_at);
+    res.productTags = await findByProductTagNames(productTagsStringArr); //TODO: Scaling problem, maybe inject tags to method?
+    // Additional tags and metadata:
+    // res.productTags.push(await parseAdditionalProductData(prod));
+    return res;
 }
