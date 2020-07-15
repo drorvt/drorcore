@@ -3,7 +3,7 @@ import Shopify from 'shopify-api-node';
 import * as Product from '../models/Product';
 import * as ProductTag from '../models/ProductTag';
 import * as ProductsService from '../services/products.service';
-import * as ProductsTagService from '../services/product-tags.service';
+import * as ProductTagsService from '../services/product-tags.service';
 import { logger } from '../utils/logger';
 
 /**
@@ -21,9 +21,6 @@ const shopify = new Shopify({
  * Service Methods
  */
 
-
-
-
 // Sync all Shopify products and tags
 export async function syncShopify() {
     // Consider using Bluebird for Promise.map
@@ -37,15 +34,15 @@ export async function syncShopify() {
         .uniq()
         .value();
     const uniqueTagList = uniqueTagStringList.map(tagString =>
-        parseShopifyProductTag(tagString)
+        ProductTagsService.parseShopifyProductTag(tagString)
     );
-    await ProductsTagService.saveProductTagArr(uniqueTagList);
+    await ProductTagsService.saveProductTagArr(uniqueTagList);
     logger.info('Product tags synced with Shopify service');
 
     await ProductsService.saveProductArr(
         await Promise.all(
             productList.map(shopifyProduct =>
-                parseShopifyProduct(shopifyProduct)
+                ProductsService.parseShopifyProduct(shopifyProduct)
             )
         )
     );
@@ -62,7 +59,7 @@ export async function syncProduct(
     );
     return shopify.product
         .get(prod.shopifyId)
-        .then(product => parseShopifyProduct(product))
+        .then(product => ProductsService.parseShopifyProduct(product))
         .then(fetchedProduct => ProductsService.saveProduct(fetchedProduct));
 }
 
@@ -82,7 +79,7 @@ export async function syncProductArr(
     return ProductsService.saveProductArr(
         await Promise.all(
             productsToUpdate.map(shopifyProduct =>
-                parseShopifyProduct(shopifyProduct)
+                ProductsService.parseShopifyProduct(shopifyProduct)
             )
         )
     );
