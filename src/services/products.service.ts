@@ -3,7 +3,11 @@ import { getConnection, createQueryBuilder, In } from 'typeorm';
 import { Product } from '../models/Product';
 import { logger } from '../utils/logger';
 import { ProductTag } from '../models/ProductTag';
-import { findProductTag, findByProductTagNames } from './product-tags.service';
+import {
+    findProductTag,
+    findByProductTagNames,
+    parseShopifyProductTag
+} from './product-tags.service';
 import Shopify from 'shopify-api-node';
 
 export function saveProduct(product: Product): Promise<Product> {
@@ -108,6 +112,17 @@ export async function parseShopifyProduct(
     res.updated = new Date(prod.updated_at);
     res.productTags = await findByProductTagNames(productTagsStringArr); //TODO: Scaling problem, maybe inject tags to method?
     // Additional tags and metadata:
-    // res.productTags.push(await parseAdditionalProductData(prod));
+    res.productTags.concat(parseAdditionalProductData(prod));
+    return res;
+}
+
+function parseAdditionalProductData(prod: Shopify.IProduct): ProductTag[] {
+    const res: ProductTag[] = [];
+    res.concat(parseShopifyProductTag(prod.product_type));
+    res.concat(parseShopifyProductTag(prod.vendor));
+    res.concat(
+        prod.variants.map(variant => parseShopifyProductTag(variant.title))
+    );
+
     return res;
 }
