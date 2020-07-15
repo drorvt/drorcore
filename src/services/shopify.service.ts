@@ -62,9 +62,46 @@ export async function syncShopify() {
     await ProductsTagService.saveProductTagArr(uniqueTagList);
     logger.info('Product tags synced with Shopify service');
 
-    //TODO: No tags in stored objects
     await ProductsService.saveProductArr(
-        await Promise.all(productList.map(x => parseShopifyProduct(x)))
+        await Promise.all(
+            productList.map(shopifyProduct =>
+                parseShopifyProduct(shopifyProduct)
+            )
+        )
     );
     logger.info('Products synced with Shopify service');
+}
+
+export async function syncProduct(
+    prod: Product.Product
+): Promise<Product.Product> {
+    logger.info(
+        'Syncing product with Shopify service. Product Shopify ID: ' +
+            prod.shopifyId
+    );
+    return shopify.product
+        .get(prod.shopifyId)
+        .then(product => parseShopifyProduct(product))
+        .then(fetchedProduct => ProductsService.saveProduct(fetchedProduct));
+}
+
+export async function syncProductArr(
+    products: Product.Product[]
+): Promise<Product.Product[]> {
+    logger.info(
+        'Syncing product with Shopify service. Product Shopify ID: ' +
+            JSON.stringify(products)
+    );
+    const productIds = products.map(prod => prod.shopifyId);
+    const allProducts = shopify.product.list();
+    const productsToUpdate = (await allProducts).filter(
+        product => productIds.indexOf(product.id) > -1
+    );
+    return ProductsService.saveProductArr(
+        await Promise.all(
+            productsToUpdate.map(shopifyProduct =>
+                parseShopifyProduct(shopifyProduct)
+            )
+        )
+    );
 }
