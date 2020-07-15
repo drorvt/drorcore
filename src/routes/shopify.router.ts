@@ -140,13 +140,30 @@ shopifyRouter.get(
     }
 );
 
-//   // POST items/
-// Update product
+// POST items/
+//TODO: Can we overload these?
+// Sync product:
+shopifyRouter.post('/products/sync', async (req: Request, res: Response) => {
+    try {
+        const product: Product = req.body.product;
+        ShopifyService.syncProduct(product);
+    } catch (e) {
+        res.status(404).send(e.message);
+    }
+});
+// Sync products:
+shopifyRouter.post('/products/syncArr', async (req: Request, res: Response) => {
+    try {
+        const products: Product[] = req.body.product;
+        ShopifyService.syncProductArr(products);
+    } catch (e) {
+        res.status(404).send(e.message);
+    }
+});
+
 //Update product tag
 
 //   // PUT items/
-// Add product
-//add productTag
 
 // DELETE items/
 //Delete product tag
