@@ -161,6 +161,16 @@ shopifyRouter.post('/products/syncArr', async (req: Request, res: Response) => {
     }
 });
 
+// Sync all:
+shopifyRouter.post('/sync', async (req: Request, res: Response) => {
+    try {
+        await ShopifyService.syncShopify();
+        res.status(200).send();
+    } catch (e) {
+        res.status(404).send(e.message);
+    }
+});
+
 //Update product tag
 
 //   // PUT items/
