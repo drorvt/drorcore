@@ -6,7 +6,9 @@ import { ProductTag } from '../models/ProductTag';
 import {
     findProductTag,
     findByProductTagNames,
-    parseShopifyProductTag
+    parseShopifyProductTag,
+    parseAdditionalProductMetadata,
+    parseShopifyProductTags
 } from './product-tags.service';
 import Shopify from 'shopify-api-node';
 
@@ -110,19 +112,10 @@ export async function parseShopifyProduct(
     res.shopId = 1; //TODO: Process shop ID
     res.productType = prod.product_type;
     res.updated = new Date(prod.updated_at);
-    res.productTags = await findByProductTagNames(productTagsStringArr); //TODO: Scaling problem, maybe inject tags to method?
+    res.productTags = parseShopifyProductTags(productTagsStringArr);
     // Additional tags and metadata:
-    res.productTags.concat(parseAdditionalProductData(prod));
-    return res;
-}
-
-function parseAdditionalProductData(prod: Shopify.IProduct): ProductTag[] {
-    const res: ProductTag[] = [];
-    res.concat(parseShopifyProductTag(prod.product_type));
-    res.concat(parseShopifyProductTag(prod.vendor));
-    res.concat(
-        prod.variants.map(variant => parseShopifyProductTag(variant.title))
+    res.productTags = res.productTags.concat(
+        parseAdditionalProductMetadata(prod)
     );
-
     return res;
 }
