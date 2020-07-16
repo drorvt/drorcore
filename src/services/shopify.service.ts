@@ -26,18 +26,6 @@ export async function syncShopify() {
     // Consider using Bluebird for Promise.map
 
     const productList = await shopify.product.list();
-    const productTagStringList = productList.map(product =>
-        product.tags.split(',').map(tag => tag.trim())
-    );
-    const uniqueTagStringList = _.chain(productTagStringList) //lodash magic here
-        .flatten()
-        .uniq()
-        .value();
-    const uniqueTagList = uniqueTagStringList.map(tagString =>
-        ProductTagsService.parseShopifyProductTag(tagString)
-    );
-    await ProductTagsService.saveProductTagArr(uniqueTagList);
-    logger.info('Product tags synced with Shopify service');
 
     await ProductsService.saveProductArr(
         await Promise.all(
