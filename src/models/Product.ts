@@ -27,7 +27,9 @@ export class Product {
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
     updated: Date | null;
 
-    @ManyToMany(type => ProductTag, productTag => productTag.products)
+    @ManyToMany(type => ProductTag, productTag => productTag.products, {
+        cascade: true
+    })
     @JoinTable()
     productTags: ProductTag[] | null;
 }

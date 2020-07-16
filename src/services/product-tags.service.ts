@@ -2,6 +2,7 @@ import { getConnection, In } from 'typeorm';
 import { ProductTag } from '../models/ProductTag';
 import { logger } from '../utils/logger';
 import { findProduct } from './products.service';
+import Shopify from 'shopify-api-node';
 
 export function saveProductTag(productTag: ProductTag): Promise<ProductTag> {
     return getConnection().getRepository(ProductTag).save(productTag);
@@ -85,5 +86,27 @@ export async function getProductTagsByProductId(
 export function parseShopifyProductTag(productTag: string): ProductTag {
     const res = new ProductTag();
     res.name = productTag;
+    return res;
+}
+
+export function parseShopifyProductTags(
+    productTagStrings: string[]
+): ProductTag[] {
+    return productTagStrings.map(productTag =>
+        parseShopifyProductTag(productTag)
+    );
+}
+
+export function parseAdditionalProductMetadata(
+    prod: Shopify.IProduct
+): ProductTag[] {
+    const res = new Array<ProductTag>();
+    res.push(parseShopifyProductTag(prod.product_type));
+    res.push(parseShopifyProductTag(prod.vendor));
+    // Variants like 'M / Red' and 'L / Red' will not be split:
+    prod.variants.map(variant =>
+        res.push(parseShopifyProductTag(variant.title))
+    );
+
     return res;
 }
