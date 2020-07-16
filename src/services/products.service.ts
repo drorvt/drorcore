@@ -1,5 +1,5 @@
 import * as ShopifyService from '../services/shopify.service';
-import { getConnection, createQueryBuilder, In } from 'typeorm';
+import { getConnection, createQueryBuilder, In, InsertResult } from 'typeorm';
 import { Product } from '../models/Product';
 import { logger } from '../utils/logger';
 import { ProductTag } from '../models/ProductTag';
@@ -12,13 +12,31 @@ import {
 } from './product-tags.service';
 import Shopify from 'shopify-api-node';
 
-export function saveProduct(product: Product): Promise<Product> {
-    return getConnection().manager.save(product);
+export async function saveProduct(product: Product): Promise<InsertResult> {
+    return getConnection()
+        .createQueryBuilder()
+        .insert()
+        .into(Product)
+        .values(product)
+        .orUpdate({
+            conflict_target: ['shopifyId'],
+            overwrite: ['name', 'shopId', 'productType', 'updated']
+        })
+        .execute();
 }
 
-export function saveProductArr(products: Product[]): Promise<Product[]> {
-    return getConnection().getRepository(Product).save(products);
-}
+// export function saveProductArr(products: Product[]): Promise<InsertResult> {
+
+// return getConnection().getRepository(Product).save(products);
+// return getConnection()
+//     .createQueryBuilder()
+//     .insert()
+//     .into(Product)
+//     .values(products)
+//     .onConflict('("shopifyId") DO UPDATE SET "name" = :name')
+//     .setParameter('shopifyId', )
+//     .execute();
+// }
 
 export function removeProduct(product: Product) {
     getConnection()
