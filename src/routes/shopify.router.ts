@@ -161,7 +161,8 @@ shopifyRouter.post('/products/syncArr', async (req: Request, res: Response) => {
     }
 });
 
-// Sync all:
+// (Should be POST or GET?)
+// Sync all: 
 shopifyRouter.post('/sync', async (req: Request, res: Response) => {
     try {
         await ShopifyService.syncShopify();
