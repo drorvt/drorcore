@@ -12,9 +12,10 @@ import {
 } from './product-tags.service';
 import Shopify from 'shopify-api-node';
 
-export async function saveProduct(product: Product): Promise<InsertResult> {
-    return getConnection()
+export async function saveProduct(product: Product) {
+    await getConnection()
         .createQueryBuilder()
+        // .relation(Product, 'productTags').of(product).add(product.productTags)
         .insert()
         .into(Product)
         .values(product)
@@ -22,21 +23,43 @@ export async function saveProduct(product: Product): Promise<InsertResult> {
             conflict_target: ['shopifyId'],
             overwrite: ['name', 'shopId', 'productType', 'updated']
         })
-        .execute();
+        .relation(Product, 'productTags')
+        .of(product)
+        .add(product.productTags);
+    await getConnection()
+        .createQueryBuilder()
+        .relation(Product, 'productTags')
+        .of(product)
+        .add(product.productTags);
 }
 
-// export function saveProductArr(products: Product[]): Promise<InsertResult> {
-
-// return getConnection().getRepository(Product).save(products);
-// return getConnection()
-//     .createQueryBuilder()
-//     .insert()
-//     .into(Product)
-//     .values(products)
-//     .onConflict('("shopifyId") DO UPDATE SET "name" = :name')
-//     .setParameter('shopifyId', )
-//     .execute();
-// }
+export async function saveProductArr(products: Product[]) {
+    await getConnection()
+        .createQueryBuilder()
+        .insert()
+        .into(Product)
+        .values(products)
+        .orUpdate({
+            conflict_target: ['shopifyId'],
+            overwrite: ['name', 'shopId', 'productType', 'updated']
+        })
+        .execute();
+    await getConnection()
+        .createQueryBuilder()
+        .insert()
+        .into(ProductTag)
+        .values(products.map(x => x.productTags))
+        .orUpdate({
+            conflict_target: ['shopifyId'],
+            overwrite: ['name', 'shopId', 'productType', 'updated']
+        })
+        .execute();
+    getConnection()
+        .createQueryBuilder()
+        .relation(Product, 'productTags')
+        .of(products.map(product => product.id))
+        .add(products.map(product => product.productTags));
+}
 
 export function removeProduct(product: Product) {
     getConnection()
