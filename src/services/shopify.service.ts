@@ -38,23 +38,19 @@ export async function syncShopify() {
 }
 
 //Sync single product
-export async function syncProduct(
-    prod: Product.Product
-): Promise<Product.Product> {
+export async function syncProduct(prod: Product.Product) {
     logger.info(
         'Syncing product with Shopify service. Product Shopify ID: ' +
             prod.shopifyId
     );
-    return shopify.product
+    shopify.product
         .get(prod.shopifyId)
         .then(product => ProductsService.parseShopifyProduct(product))
         .then(fetchedProduct => ProductsService.saveProduct(fetchedProduct));
 }
 
 // Sync product array
-export async function syncProductArr(
-    products: Product.Product[]
-): Promise<Product.Product[]> {
+export async function syncProductArr(products: Product.Product[]) {
     logger.info(
         'Syncing product with Shopify service. Product Shopify ID: ' +
             JSON.stringify(products)
@@ -64,7 +60,7 @@ export async function syncProductArr(
     const productsToUpdate = (await allProducts).filter(
         product => productIds.indexOf(product.id) > -1
     );
-    return ProductsService.saveProductArr(
+    ProductsService.saveProductArr(
         await Promise.all(
             productsToUpdate.map(shopifyProduct =>
                 ProductsService.parseShopifyProduct(shopifyProduct)
