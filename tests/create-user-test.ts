@@ -26,8 +26,6 @@ describe('Create User', function() {
         await createUser(user);
 
         user = await findUser('test@chai.com');
-        let passowrd:any = user?.password;
-        expect(passowrd != "xxx");
         expect(user?.password?.length).to.be.above(3);
     });
 
