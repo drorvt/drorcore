@@ -12,44 +12,38 @@ import {
 } from './product-tags.service';
 import Shopify from 'shopify-api-node';
 
+export async function upsertProduct(product: Product) {
+    const existingProduct = await getConnection()
+        .getRepository(Product)
+        .findOne({
+            where: { shopifyId: product.id }
+        });
+    if (existingProduct) {
+        product.id = existingProduct.id;
+    }
+    saveProduct(product);
+}
+
 export async function saveProduct(product: Product) {
-    await getConnection()
-        .createQueryBuilder()
-        // .relation(Product, 'productTags').of(product).add(product.productTags)
-        .insert()
-        .into(Product)
-        .values(product)
-        .orUpdate({
-            conflict_target: ['shopifyId'],
-            overwrite: ['name', 'shopId', 'productType', 'updated']
-        })
-        .relation(Product, 'productTags')
-        .of(product)
-        .add(product.productTags);
-    await getConnection()
-        .createQueryBuilder()
-        .relation(Product, 'productTags')
-        .of(product)
-        .add(product.productTags);
+    await getConnection().getRepository(Product).save(product);
 }
 
 export async function saveProductArr(products: Product[]) {
-    await getConnection()
-        .createQueryBuilder()
-        .insert()
-        .into(Product)
-        .values(products)
-        .orUpdate({
-            conflict_target: ['shopifyId'],
-            overwrite: ['name', 'shopId', 'productType', 'updated']
-        })
-        .execute();
+    const productsRepository = getConnection().getRepository(Product);
+    const dbProducts = await findProducts(
+        products.map(product => product.shopifyId)
+    );
 
-    getConnection()
-        .createQueryBuilder()
-        .relation(Product, 'productTags')
-        .of(products.map(product => product.id))
-        .add(products.map(product => product.productTags));
+    products = products.map(toUpdateProduct => {
+        const dbProduct = dbProducts.find(
+            prod => prod.shopifyId == toUpdateProduct.shopifyId
+        );
+        return dbProduct
+            ? { ...dbProduct, ...toUpdateProduct }
+            : toUpdateProduct;
+    });
+
+    productsRepository.save(products);
 }
 
 export function removeProduct(product: Product) {
@@ -118,15 +112,27 @@ export async function findProduct(
 ): Promise<Product | undefined> {
     logger.info('Find product id ' + productId);
     try {
-        const res = await getConnection()
+        return getConnection()
             .getRepository(Product)
             .findOne({
                 where: { shopifyId: productId },
                 relations: ['productTags']
             }); //Consider findByIds
-        return res;
     } catch (e) {
         throw new Error('No record found');
+    }
+}
+
+export async function findProducts(productIds: number[]): Promise<Product[]> {
+    try {
+        logger.info('Find products by ID: ' + JSON.stringify(productIds));
+        return getConnection()
+            .getRepository(Product)
+            .find({
+                shopifyId: In(productIds)
+            });
+    } catch (e) {
+        throw new Error('Error finding proudcts');
     }
 }
 
