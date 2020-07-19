@@ -7,6 +7,7 @@ import { query, check, validationResult } from 'express-validator/check';
 import * as ShopifyService from '../services/shopify.service';
 import { Product } from '../models/Product';
 import { logger } from '../utils/logger';
+import { handleError } from '../utils/error-handler';
 import {
     getAllProducts,
     findProduct,
@@ -69,7 +70,7 @@ shopifyRouter.get(
                 res.status(400).send('Invalid product ID');
             }
         } catch (e) {
-            res.status(404).send(e.message);
+          handleError(res, e.message, 404, e);
         }
     }
 );
