@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "tsc": "tsc",
-    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
+    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
+    "test": "mocha -r ts-node/register tests/**/*.test.ts"
   },
   "tsc": "tsc",
   "repository": {
@@ -37,13 +38,19 @@
     "pino": "^6.3.2",
     "reflect-metadata": "^0.1.13",
     "shopify-api-node": "^3.3.2",
+    "sqlite3": "^5.0.0",
     "typeorm": "^0.2.25",
-    "typescript": "^3.9.6",
     "winston": "^3.3.3"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.157",
     "ts-node": "^8.10.2",
-    "watch": "^1.0.2"
+    "watch": "^1.0.2",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^8.0.0",
+    "chai": "^4.2.0",
+    "mocha": "^8.0.1",
+    "nyc": "^15.1.0",
+    "typescript": "^3.9.7"
   }
 }

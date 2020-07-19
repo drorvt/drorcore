@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './User';
+import { DbAwareColumn } from './DBColumnSupport';
 
 @Entity('shops', { schema: 'pdq' })
 export class Shop {
@@ -12,11 +13,15 @@ export class Shop {
     @Column('varchar', { name: 'url', nullable: true, length: 100 })
     url: string | null;
 
-    @Column('timestamp', {
-        name: 'created',
-        nullable: true,
-        default: () => 'CURRENT_TIMESTAMP'
-    })
+    @DbAwareColumn({type: "timestamp",
+    name: 'created',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP'})
+    // @Column('timestamp', {
+    //     name: 'created',
+    //     nullable: true,
+    //     default: () => 'CURRENT_TIMESTAMP'
+    // })
     created: Date | null;
 
     @Column('varchar', { name: 'api_key', nullable: true, length: 100 })
