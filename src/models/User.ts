@@ -9,6 +9,7 @@ import {
     PrimaryGeneratedColumn
 } from 'typeorm';
 import { Shop } from './Shop';
+import { DbAwareColumn } from './DBColumnSupport';7
 
 @Index('users_FK', ['shopId'], {})
 @Entity('users', { schema: 'pdq' })
@@ -34,11 +35,15 @@ export class User {
     @Column('tinyint', { name: 'is_admin', nullable: true, width: 1 })
     isAdmin: boolean | null;
 
-    @Column('timestamp', {
-        name: 'created',
-        nullable: true,
-        default: () => 'CURRENT_TIMESTAMP'
-    })
+    // @Column('timestamp', {
+    //     name: 'created',
+    //     nullable: true,
+    //     default: () => 'CURRENT_TIMESTAMP'
+    // })
+    @DbAwareColumn({type: "timestamp",
+    name: 'created',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP'})
     created: Date | null;
 
     @ManyToMany(type => Shop, shop => shop.users)
