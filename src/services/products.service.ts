@@ -44,16 +44,7 @@ export async function saveProductArr(products: Product[]) {
             overwrite: ['name', 'shopId', 'productType', 'updated']
         })
         .execute();
-    await getConnection()
-        .createQueryBuilder()
-        .insert()
-        .into(ProductTag)
-        .values(products.map(x => x.productTags))
-        .orUpdate({
-            conflict_target: ['shopifyId'],
-            overwrite: ['name', 'shopId', 'productType', 'updated']
-        })
-        .execute();
+
     getConnection()
         .createQueryBuilder()
         .relation(Product, 'productTags')
