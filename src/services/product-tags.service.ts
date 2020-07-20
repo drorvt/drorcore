@@ -18,9 +18,10 @@ export function removeProductTag(productTag: ProductTag) {
     getConnection()
         .getRepository(ProductTag)
         .remove(productTag)
-        .then(x =>
+        .then(productTag =>
             logger.info(
-                'Product tag has been removed from database. ID: ' + x.id
+                'Product tag has been removed from database. ID: ' +
+                    productTag.uuid
             )
         );
 }
