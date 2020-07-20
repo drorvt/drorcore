@@ -25,10 +25,12 @@
     "@types/passport": "^1.0.4",
     "app-root-path": "^3.0.0",
     "bcryptjs": "^2.4.3",
+    "class-validator": "^0.12.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "express-validator": "^6.6.0",
+    "graphql": "^15.3.0",
     "lodash": "^4.17.19",
     "mysql": "^2.18.1",
     "mysql-promise": "^5.0.0",
@@ -39,7 +41,9 @@
     "reflect-metadata": "^0.1.13",
     "shopify-api-node": "^3.3.2",
     "sqlite3": "^5.0.0",
+    "type-graphql": "^1.0.0-rc.3",
     "typeorm": "^0.2.25",
+    "uuid": "^8.2.0",
     "winston": "^3.3.3"
   },
   "devDependencies": {

@@ -6,6 +6,7 @@ import { findUser } from "./user.service";
 import { User } from "../models/User";
 import { Shop } from "../models/Shop";
 const bcrypt = require('bcryptjs');
+const uuid = require('uuid').uuidv5;
 
 export const ensureAuthenticated = (req: any, res: Response, next: () => void): void => {
     if (req.originalUrl === '/login' || req.originalUrl === '/login.html') {

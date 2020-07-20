@@ -2,7 +2,10 @@ import { ProductManager } from '../src/services/ProductManager';
 import { createUser, addUserToShop } from '../src/services/user.service';
 import { User } from '../src/models/User';
 import { Shop } from '../src/models/Shop';
+import { Product } from '../src/models/Product';
 import { syncShopify } from '../src/services/shopify.service';
+import { saveProduct } from '../src/services/products.service';
+import { createShop, getShop } from '../src/services/shop.service';
 
 const fs = require('fs');
 const mysql = require('mysql');
@@ -58,11 +61,23 @@ export const buildDemoDB = async () => {
     user.password = 'xxx';
     await createUser(user);
 
-    const shop: Shop = new Shop();
+    let shop: Shop|undefined = new Shop();
     shop.apiKey = 'mykey';
     shop.name = 'demo shop';
     shop.secretKey = 'shhhh';
     shop.url = 'http://google.com';
-
     addUserToShop(user, shop);
+
+    await createShop(shop);
+    shop = await getShop(shop.name);
+
+    if (shop){
+        let product = new Product();
+        product.name = "Fish";
+        product.shopId = shop.id;
+        product.shopifyId = 111;
+        saveProduct(product);
+    }
+
+
 };
