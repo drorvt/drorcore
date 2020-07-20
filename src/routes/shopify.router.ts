@@ -23,6 +23,7 @@ import {
 import { ProductTag } from '../models/ProductTag';
 import e from 'express';
 import { FindOperator } from 'typeorm';
+import authorize from '../services/authorization.service';
 
 /**
  * Router Definition
@@ -37,6 +38,7 @@ export const shopifyRouter = express.Router();
 // Product methods:
 shopifyRouter.get(
     '/products/getAllProducts',
+    authorize('read'),
     async (req: Request, res: Response) => {
         try {
             // const result = await ShopifyService.getAllProducts();
@@ -51,6 +53,7 @@ shopifyRouter.get(
 shopifyRouter.get(
     '/products',
     [query('productTagId').notEmpty().isNumeric()],
+    authorize('read'),
     async (req: Request, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -70,7 +73,7 @@ shopifyRouter.get(
                 res.status(400).send('Invalid product ID');
             }
         } catch (e) {
-          handleError(res, e.message, 404, e);
+            handleError(res, e.message, 404, e);
         }
     }
 );
@@ -79,6 +82,7 @@ shopifyRouter.get(
 shopifyRouter.get(
     '/products',
     [query('productId').notEmpty().isNumeric()],
+    authorize('read'),
     async (req: Request, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -105,19 +109,24 @@ shopifyRouter.get(
 );
 
 //ProductTag methods:
-shopifyRouter.get('/tags/getAllTags', async (req: Request, res: Response) => {
-    try {
-        const tags = await getAllProductTags();
-        res.status(200).send(tags);
-    } catch (e) {
-        res.status(404).send(e.message);
+shopifyRouter.get(
+    '/tags/getAllTags',
+    authorize('read'),
+    async (req: Request, res: Response) => {
+        try {
+            const tags = await getAllProductTags();
+            res.status(200).send(tags);
+        } catch (e) {
+            res.status(404).send(e.message);
+        }
     }
-});
+);
 
 //get all tags for product
 shopifyRouter.get(
     '/tags',
     [query('productId').notEmpty().isNumeric()],
+    authorize('read'),
     async (req: Request, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -144,34 +153,46 @@ shopifyRouter.get(
 // POST items/
 //TODO: Can we overload these?
 // Sync product:
-shopifyRouter.post('/products/sync', async (req: Request, res: Response) => {
-    try {
-        const product: Product = req.body.product;
-        ShopifyService.syncProduct(product);
-    } catch (e) {
-        res.status(404).send(e.message);
+shopifyRouter.post(
+    '/products/sync',
+    authorize('read'),
+    async (req: Request, res: Response) => {
+        try {
+            const product: Product = req.body.product;
+            ShopifyService.syncProduct(product);
+        } catch (e) {
+            res.status(404).send(e.message);
+        }
     }
-});
+);
 // Sync products:
-shopifyRouter.post('/products/syncArr', async (req: Request, res: Response) => {
-    try {
-        const products: Product[] = req.body.product;
-        ShopifyService.syncProductArr(products);
-    } catch (e) {
-        res.status(404).send(e.message);
+shopifyRouter.post(
+    '/products/syncArr',
+    authorize('read'),
+    async (req: Request, res: Response) => {
+        try {
+            const products: Product[] = req.body.product;
+            ShopifyService.syncProductArr(products);
+        } catch (e) {
+            res.status(404).send(e.message);
+        }
     }
-});
+);
 
 // (Should be POST or GET?)
-// Sync all: 
-shopifyRouter.post('/sync', async (req: Request, res: Response) => {
-    try {
-        await ShopifyService.syncShopify();
-        res.status(200).send();
-    } catch (e) {
-        res.status(404).send(e.message);
+// Sync all:
+shopifyRouter.post(
+    '/sync',
+    authorize('read'),
+    async (req: Request, res: Response) => {
+        try {
+            await ShopifyService.syncShopify();
+            res.status(200).send();
+        } catch (e) {
+            res.status(404).send(e.message);
+        }
     }
-});
+);
 
 //Update product tag
 
@@ -182,6 +203,7 @@ shopifyRouter.post('/sync', async (req: Request, res: Response) => {
 shopifyRouter.delete(
     '/tags',
     [query('productTagId').notEmpty().isNumeric()],
+    authorize('read'),
     async (req: Request, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -211,6 +233,7 @@ shopifyRouter.delete(
 shopifyRouter.delete(
     '/products',
     [query('productId').notEmpty().isNumeric()],
+    authorize('read'),
     async (req: Request, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
