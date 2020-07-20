@@ -6,7 +6,7 @@ import {
     PrimaryGeneratedColumn,
     JoinTable
 } from 'typeorm';
-import { ObjectType,Field,ID,Int } from 'type-graphql';
+import { ObjectType, Field, ID, Int } from 'type-graphql';
 
 @ObjectType()
 @Entity()
@@ -26,7 +26,7 @@ export class Product {
     @Field(type => String)
     name: string | null;
 
-    @Column('varchar')
+    @Column({ type: 'varchar', nullable: true })
     @Field(type => String)
     productType: string | null;
 

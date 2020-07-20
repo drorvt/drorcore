@@ -13,43 +13,23 @@ import {
 import Shopify from 'shopify-api-node';
 
 export async function saveProduct(product: Product) {
-    await getConnection()
-        .createQueryBuilder()
-        // .relation(Product, 'productTags').of(product).add(product.productTags)
-        .insert()
-        .into(Product)
-        .values(product)
-        .orUpdate({
-            conflict_target: ['shopifyId'],
-            overwrite: ['name', 'shopId', 'productType', 'updated']
-        })
-        .relation(Product, 'productTags')
-        .of(product)
-        .add(product.productTags);
-    await getConnection()
-        .createQueryBuilder()
-        .relation(Product, 'productTags')
-        .of(product)
-        .add(product.productTags);
+    await getConnection().getRepository(Product).save(product);
 }
 
 export async function saveProductArr(products: Product[]) {
-    await getConnection()
-        .createQueryBuilder()
-        .insert()
-        .into(Product)
-        .values(products)
-        .orUpdate({
-            conflict_target: ['shopifyId'],
-            overwrite: ['name', 'shopId', 'productType', 'updated']
-        })
-        .execute();
+    const productsRepository = getConnection().getRepository(Product);
+    const dbProducts = await findProducts(
+        products.map(product => product.shopifyId)
+    );
 
-    getConnection()
-        .createQueryBuilder()
-        .relation(Product, 'productTags')
-        .of(products.map(product => product.id))
-        .add(products.map(product => product.productTags));
+    products = products.map(newProduct => {
+        const dbProduct = dbProducts.find(
+            prod => prod.shopifyId == newProduct.shopifyId
+        );
+        return dbProduct ? mergeProducts(dbProduct, newProduct) : newProduct;
+    });
+
+    productsRepository.save(products);
 }
 
 export function removeProduct(product: Product) {
@@ -130,6 +110,20 @@ export async function findProduct(
     }
 }
 
+export async function findProducts(productIds: number[]): Promise<Product[]> {
+    try {
+        logger.info('Find products by ID: ' + JSON.stringify(productIds));
+        return getConnection()
+            .getRepository(Product)
+            .find({
+                where: { shopifyId: In(productIds) },
+                relations: ['productTags']
+            });
+    } catch (e) {
+        throw new Error('Error finding proudcts');
+    }
+}
+
 export function countProducts(): Promise<number> {
     return getConnection().getRepository(Product).count();
 }
@@ -150,4 +144,25 @@ export async function parseShopifyProduct(
         parseAdditionalProductMetadata(prod)
     );
     return res;
+}
+
+export function mergeProducts(
+    dbProduct: Product,
+    newProduct: Product
+): Product {
+    newProduct.id = dbProduct.id;
+
+    if (newProduct.productTags && dbProduct.productTags) {
+        newProduct.productTags = newProduct.productTags.map(newProductTag => {
+            const dbProductTag = dbProduct.productTags?.find(
+                prodTag => prodTag.name == newProductTag.name
+            );
+            return dbProductTag ? dbProductTag : newProductTag;
+        });
+
+        dbProduct.productTags == newProduct.productTags
+            ? newProduct.productTags
+            : dbProduct.productTags;
+    }
+    return newProduct;
 }
