@@ -7,8 +7,7 @@ import { assert } from 'chai';
 
 describe('Create User', function() {
     it('Checks that passowrd is hashed', async () => {
-        await initDB();
-
+        
         await createConnection({
             type: "sqlite",
             database: ":memory:",

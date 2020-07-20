@@ -1,4 +1,5 @@
 import express = require('express');
+import "reflect-metadata";
 require('dotenv').config();
 import { ensureAuthenticated } from './src/services/authentication.service';
 import { createConnection } from 'typeorm';
@@ -55,7 +56,7 @@ const startServer = async () => {
     await createConnection();
     logger.info('info', 'created Database connection');
 
-    await syncShopify();
+    // await syncShopify();
 
     await buildDemoDB();
 
