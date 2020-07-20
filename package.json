@@ -6,7 +6,7 @@
   "scripts": {
     "tsc": "tsc",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
-    "test": "mocha -r ts-node/register tests/**/*.test.ts"
+    "test": "mocha -r ts-node/register ./tests/**/*.ts"
   },
   "tsc": "tsc",
   "repository": {

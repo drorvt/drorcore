@@ -6,7 +6,7 @@ import {createUser, findUser} from '../src/services/user.service';
 import { assert } from 'chai';
 
 describe('Create User', function() {
-    it('Checks that passowrd is hashed', async () => {
+    it('Checks that password is hashed', async () => {
         await initDB();
 
         await createConnection({
