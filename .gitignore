@@ -9,4 +9,5 @@ package-lock.json
 .env
 *.map
 *.js.map
-.github/workflows/*
+settings.json
+/vscode/*
