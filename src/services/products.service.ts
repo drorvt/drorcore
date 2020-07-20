@@ -5,10 +5,9 @@ import { logger } from '../utils/logger';
 import { ProductTag } from '../models/ProductTag';
 import {
     findProductTag,
-    findByProductTagNames,
-    parseShopifyProductTag,
     parseAdditionalProductMetadata,
-    parseShopifyProductTags
+    parseShopifyProductTags,
+    getAllProductTags
 } from './product-tags.service';
 import Shopify from 'shopify-api-node';
 
@@ -21,14 +20,17 @@ export async function saveProductArr(products: Product[]) {
     const dbProducts = await findProducts(
         products.map(product => product.shopifyId)
     );
-
-    products = products.map(newProduct => {
-        const dbProduct = dbProducts.find(
-            prod => prod.shopifyId == newProduct.shopifyId
+    if (dbProducts.length > 0) {
+        products = await Promise.all(
+            products.map(newProduct => {
+                const dbProduct = dbProducts.find(
+                    prod => prod.shopifyId == newProduct.shopifyId
+                );
+                if (dbProduct) newProduct.id = dbProduct.id;
+                return newProduct;
+            })
         );
-        return dbProduct ? mergeProducts(dbProduct, newProduct) : newProduct;
-    });
-
+    }
     productsRepository.save(products);
 }
 
@@ -72,7 +74,6 @@ export async function getProductsByTagId(
     try {
         logger.info('Get all products with tag ID ' + productTagId);
 
-        //YB: Best I could do w/ typeORM - finds the products but doesn't nest the ProductTags properly.
         const productTag = await findProductTag(productTagId);
         if (productTag) {
             return getConnection()
@@ -146,23 +147,25 @@ export async function parseShopifyProduct(
     return res;
 }
 
-export function mergeProducts(
+// Copies the old product's id and any existing productTags into the new so TypeORM's
+// save method updates the object properly (instead of creating duplicates)
+export async function mergeProducts(
     dbProduct: Product,
     newProduct: Product
-): Product {
+): Promise<Product> {
     newProduct.id = dbProduct.id;
-
+    const allProductTags = await getAllProductTags();
     if (newProduct.productTags && dbProduct.productTags) {
         newProduct.productTags = newProduct.productTags.map(newProductTag => {
-            const dbProductTag = dbProduct.productTags?.find(
+            const existingProductTag = allProductTags.find(
                 prodTag => prodTag.name == newProductTag.name
             );
-            return dbProductTag ? dbProductTag : newProductTag;
+            return existingProductTag ? existingProductTag : newProductTag;
         });
 
-        dbProduct.productTags == newProduct.productTags
-            ? newProduct.productTags
-            : dbProduct.productTags;
+        // dbProduct.productTags == newProduct.productTags
+        //     ? newProduct.productTags
+        //     : dbProduct.productTags;
     }
     return newProduct;
 }
