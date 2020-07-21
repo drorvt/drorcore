@@ -1,10 +1,9 @@
 import { User } from '../models/User';
+import { getConnection } from 'typeorm';
 import { Shop } from '../models/Shop';
 
-import { getConnection } from 'typeorm';
-
-export const createShop = async (shop: Shop) => {
-    await getConnection().manager.save(shop);
+export const createShop = async (shop: Shop):Promise<Shop> => {
+    return getConnection().manager.save(shop);
 };
 
 export const getShop = async (name: string) => {

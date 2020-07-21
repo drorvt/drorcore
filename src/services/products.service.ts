@@ -11,8 +11,8 @@ import {
 } from './product-tags.service';
 import Shopify from 'shopify-api-node';
 
-export async function saveProduct(product: Product) {
-    await getConnection().getRepository(Product).save(product);
+export async function saveProduct(product: Product):Promise<Product> {
+    return getConnection().getRepository(Product).save(product);
 }
 
 export async function saveProductArr(products: Product[]) {
@@ -136,7 +136,7 @@ export async function parseShopifyProduct(
     const res = new Product();
     res.shopifyId = prod.id;
     res.name = prod.title;
-    res.shopId = 1; //TODO: Process shop ID
+    // res.shopId = 1; //TODO: Process shop ID
     res.productType = prod.product_type;
     res.updated = new Date(prod.updated_at);
     res.productTags = parseShopifyProductTags(productTagsStringArr);

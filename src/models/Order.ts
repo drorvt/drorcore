@@ -4,12 +4,14 @@ import {
     OneToOne,
     JoinColumn,
     PrimaryGeneratedColumn,
-    OneToMany
+    OneToMany,
+    ManyToOne
 } from 'typeorm';
 import { ObjectType, Field, ID, Int } from 'type-graphql';
 import { OrderItem } from './OrderItem';
 import { DbAwareColumn } from './DBColumnSupport';
 import { Carrier } from './Carrier';
+import { Shop } from './Shop';
 
 @ObjectType()
 @Entity()
@@ -18,11 +20,18 @@ export class Order {
     @Field(type => ID)
     id: number;
 
-    @OneToMany(type => OrderItem, inverseSide => true)
+    @OneToMany(type => OrderItem, orderItem => orderItem.order, {eager: true})
+    @JoinColumn()
+    @Field(type => [OrderItem])
     items: OrderItem[];
 
     @Column()
     address: string;
+
+    @Field(type => Shop)
+    @JoinColumn()
+    @ManyToOne(type => Shop)
+    shop:Shop;
 
     @DbAwareColumn({type: "timestamp",
     name: 'created',
