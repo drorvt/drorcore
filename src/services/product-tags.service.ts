@@ -3,6 +3,7 @@ import { ProductTag } from '../models/ProductTag';
 import { logger } from '../utils/logger';
 import { findProduct } from './products.service';
 import Shopify from 'shopify-api-node';
+import { Shop } from '../models/Shop';
 
 export function saveProductTag(productTag: ProductTag): Promise<ProductTag> {
     return getConnection().getRepository(ProductTag).save(productTag);
@@ -42,11 +43,12 @@ export function updateProductTag(
 }
 
 export async function findProductTag(
-    productTagId: number
+    productTagId: number,
+    shop: Shop
 ): Promise<ProductTag | undefined> {
     const res = await getConnection()
         .getRepository(ProductTag)
-        .findOne({ where: { id: productTagId } });
+        .findOne({ where: { id: productTagId, shop: shop } });
     return res;
 }
 
@@ -66,10 +68,11 @@ export function getAllProductTags(): Promise<ProductTag[]> {
 }
 
 export async function getProductTagsByProductId(
-    productId: number
+    productId: number,
+    shop: Shop
 ): Promise<ProductTag[] | null> {
     try {
-        const product = await findProduct(productId);
+        const product = await findProduct(productId, shop);
         if (product) {
             return product.productTags;
         } else {

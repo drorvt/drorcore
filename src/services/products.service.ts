@@ -10,15 +10,21 @@ import {
     getAllProductTags
 } from './product-tags.service';
 import Shopify from 'shopify-api-node';
+import { getShop } from './shop.service';
+import { Shop } from '../models/Shop';
 
 export async function saveProduct(product: Product): Promise<Product> {
     return getConnection().getRepository(Product).save(product);
 }
 
-export async function saveProductArr(products: Product[]): Promise<Product[]> {
+export async function saveProductArr(
+    products: Product[],
+    shop: Shop
+): Promise<Product[]> {
     const productsRepository = getConnection().getRepository(Product);
     const dbProducts = await findProducts(
-        products.map(product => product.shopifyId)
+        products.map(product => product.shopifyId),
+        shop
     );
     if (dbProducts.length > 0) {
         products = await Promise.all(
@@ -55,30 +61,35 @@ export function updateProduct(product: Product, newProduct: Product) {
         );
 }
 
-export async function getAllProducts(shopName: string): Promise<Product[]> {
+export async function getAllProducts(shop: Shop): Promise<Product[]> {
     logger.info('Get all products');
-    const productCount = await countProducts();
-    if (productCount == 0) {
-        logger.info('No products in database. Resyncing.'); //TODO: add limit for resyncing.
-        await ShopifyService.syncShopify(shopName);
-    }
+    // const productCount = await countProducts();
+    // if (productCount == 0) {
+    //     logger.info('No products in database. Resyncing.'); //TODO: add limit for resyncing.
+    //     await ShopifyService.syncShopify(shopName);
+    // }
     const res = await getConnection()
         .getRepository(Product)
-        .find({ relations: ['productTags'] });
+        .find({
+            relations: ['productTags'],
+            where: { shop: shop }
+        });
     return res;
 }
 
 export async function getProductsByTagId(
-    productTagId: number
+    productTagId: number,
+    shop: Shop
 ): Promise<Product[] | null> {
     try {
         logger.info('Get all products with tag ID ' + productTagId);
 
-        const productTag = await findProductTag(productTagId);
+        const productTag = await findProductTag(productTagId, shop);
         if (productTag) {
             return getConnection()
                 .getRepository(Product)
                 .createQueryBuilder()
+                .where({ shop: shop })
                 .relation(ProductTag, 'products')
                 .of(productTag)
                 .loadMany();
@@ -95,14 +106,15 @@ export async function getProductsByTagId(
 }
 
 export async function findProduct(
-    productId: number
+    productId: number,
+    shop: Shop
 ): Promise<Product | undefined> {
     logger.info('Find product id ' + productId);
     try {
         const res = await getConnection()
             .getRepository(Product)
             .findOne({
-                where: { shopifyId: productId },
+                where: { shopifyId: productId, shop: shop },
                 relations: ['productTags']
             }); //Consider findByIds
         return res;
@@ -111,13 +123,16 @@ export async function findProduct(
     }
 }
 
-export async function findProducts(productIds: number[]): Promise<Product[]> {
+export async function findProducts(
+    productIds: number[],
+    shop: Shop
+): Promise<Product[]> {
     try {
         logger.info('Find products by ID: ' + JSON.stringify(productIds));
         return getConnection()
             .getRepository(Product)
             .find({
-                where: { shopifyId: In(productIds) },
+                where: { shopifyId: In(productIds), shop: shop },
                 relations: ['productTags']
             });
     } catch (e) {
@@ -125,18 +140,21 @@ export async function findProducts(productIds: number[]): Promise<Product[]> {
     }
 }
 
-export function countProducts(): Promise<number> {
-    return getConnection().getRepository(Product).count();
+export function countProducts(shop: Shop): Promise<number> {
+    return getConnection()
+        .getRepository(Product)
+        .count({ where: { shop: shop } });
 }
 
 export async function parseShopifyProduct(
-    prod: Shopify.IProduct
+    prod: Shopify.IProduct,
+    shop: Shop
 ): Promise<Product> {
     const productTagsStringArr = prod.tags.split(',').map(x => x.trim());
     const res = new Product();
+    res.shop = shop;
     res.shopifyId = prod.id;
     res.name = prod.title;
-    // res.shopId = 1; //TODO: Process shop ID
     res.productType = prod.product_type;
     res.updated = new Date(prod.updated_at);
     res.productTags = parseShopifyProductTags(productTagsStringArr);
