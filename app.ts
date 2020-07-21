@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 import express = require('express');
 require('dotenv').config();
 import { ensureAuthenticated } from './src/services/authentication.service';
@@ -17,10 +17,10 @@ console.log('Production: ' + process.env.PRODOCTION);
 import { shopifyRouter } from './src/routes/shopify.router';
 import { userRouter } from './src/routes/user.router';
 import { syncShopify } from './src/services/shopify.service';
-import {graphqlHTTP, GraphQLParams} from "express-graphql";
-import expressPlayground from "graphql-playground-middleware-express";
+import { graphqlHTTP, GraphQLParams } from 'express-graphql';
+import expressPlayground from 'graphql-playground-middleware-express';
 import { productsSchema } from './src/routes/product.graphql.route';
-import { GraphQLSchema } from "graphql/type/schema";
+import { GraphQLSchema } from 'graphql/type/schema';
 const { printSchema } = require('graphql');
 
 const app: express.Application = express();
@@ -43,7 +43,6 @@ app.use('/shopify', shopifyRouter);
 
 app.all('/*', ensureAuthenticated);
 
-
 app.get('/', function (req, res) {
     res.send('Hello World!');
 });
@@ -55,24 +54,25 @@ const startServer = async () => {
     if (!production) {
         await initDB();
     }
-    
-    app.use('/productsql',
-      graphqlHTTP({
-        schema: await productsSchema(),
-        graphiql: true
-      })
-    );
 
-    app.get("/playground", expressPlayground({ endpoint: "/productsql" }));
+    // app.use(
+    //     '/productsql',
+    //     graphqlHTTP({
+    //         schema: await productsSchema(),
+    //         graphiql: true
+    //     })
+    // );
+
+    app.get('/playground', expressPlayground({ endpoint: '/productsql' }));
     app.listen(4000, () => {
-      console.log(
-        'Server is running, GraphQL Playground available at http://localhost:4000/playground',
-      );
+        console.log(
+            'Server is running, GraphQL Playground available at http://localhost:4000/playground'
+        );
     });
 
     // .then(con => {
     //     logger.info('info', 'created Database connection');
-    // }); 
+    // });
     // redundant "then"
     await createConnection();
     logger.info('info', 'created Database connection');
