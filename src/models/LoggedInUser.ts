@@ -1,7 +1,9 @@
+import { Shop } from './Shop';
+
 export class LoggedInUser {
     userName: string | null;
     id: number;
-    store: number | undefined;
+    store: Shop | undefined;
     loggedSince: Date;
     roles: Array<string> = ['read'];
 
