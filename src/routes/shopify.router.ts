@@ -24,6 +24,7 @@ import { ProductTag } from '../models/ProductTag';
 import e from 'express';
 import { FindOperator } from 'typeorm';
 import authorize from '../services/authorization.service';
+import { Shop } from '../models/Shop';
 
 /**
  * Router Definition
@@ -40,9 +41,9 @@ export const shopifyRouter = express.Router();
 shopifyRouter.get(
     '/products/getAllProducts',
     authorize('read'),
-    async (req: Request, res: Response) => {
+    async (req: any, res: Response) => {
         try {
-            res.status(200).send(await getAllProducts());
+            res.status(200).send(await getAllProducts(req.user.store));
         } catch (e) {
             handleError(res, e.message, 404, 'Get all products');
         }
@@ -54,7 +55,7 @@ shopifyRouter.get(
     '/products',
     [query('productTagId').notEmpty().isNumeric()],
     authorize('read'),
-    async (req: Request, res: Response) => {
+    async (req: any, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             handleError(
@@ -65,11 +66,14 @@ shopifyRouter.get(
             );
         }
         try {
+            console.log(req.user);
+            console.log(req.loggedInUser);
             if (req.query.productTagId) {
                 //+ parses string to number
                 const productTagId = +req.query.productTagId;
+                const shop: Shop = req.user.store;
                 if (productTagId) {
-                    const tags = await getProductsByTagId(productTagId);
+                    const tags = await getProductsByTagId(productTagId, shop);
                     res.status(200).send(tags);
                 } else {
                     handleError(
@@ -98,7 +102,7 @@ shopifyRouter.get(
     '/products',
     [query('productId').notEmpty().isNumeric()],
     authorize('read'),
-    async (req: Request, res: Response) => {
+    async (req: any, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             handleError(res, JSON.stringify(errors), 422, 'Get product by ID');
@@ -107,7 +111,8 @@ shopifyRouter.get(
             if (req.query.productId) {
                 //+ parses string to number
                 const product: Product | undefined = await findProduct(
-                    +req.query.productId
+                    +req.query.productId,
+                    req.user.store
                 );
                 if (product) {
                     res.status(200).send(product);
@@ -153,7 +158,7 @@ shopifyRouter.get(
     '/tags',
     [query('productId').notEmpty().isNumeric()],
     authorize('read'),
-    async (req: Request, res: Response) => {
+    async (req: any, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             handleError(
@@ -167,7 +172,10 @@ shopifyRouter.get(
             if (req.query.productId) {
                 const productId = +req.query.productId;
                 if (productId) {
-                    const tags = await getProductTagsByProductId(productId);
+                    const tags = await getProductTagsByProductId(
+                        productId,
+                        req.user.store
+                    );
                     res.status(200).send(tags);
                 } else {
                     handleError(
@@ -197,10 +205,10 @@ shopifyRouter.get(
 shopifyRouter.post(
     '/products/sync',
     authorize('read'),
-    async (req: Request, res: Response) => {
+    async (req: any, res: Response) => {
         try {
             const product: Product = req.body.product;
-            ShopifyService.syncProduct(product);
+            ShopifyService.syncProduct(product, req.user.store);
         } catch (e) {
             handleError(res, e.message, 404, 'Sync Shopify product');
         }
@@ -211,10 +219,10 @@ shopifyRouter.post(
 shopifyRouter.post(
     '/products/syncArr',
     authorize('read'),
-    async (req: Request, res: Response) => {
+    async (req: any, res: Response) => {
         try {
             const products: Product[] = req.body.product;
-            ShopifyService.syncProductArr(products);
+            ShopifyService.syncProductArr(products, req.user.store);
         } catch (e) {
             handleError(res, e.message, 404, 'Sync Shopify products');
         }
@@ -226,9 +234,9 @@ shopifyRouter.post(
 shopifyRouter.post(
     '/sync',
     authorize('read'),
-    async (req: Request, res: Response) => {
+    async (req: any, res: Response) => {
         try {
-            await ShopifyService.syncShopify();
+            await ShopifyService.syncShopify(req.user.store);
             res.status(200).send();
         } catch (e) {
             handleError(res, e.message, 404, 'Sync all shopify products');
@@ -242,7 +250,7 @@ shopifyRouter.delete(
     '/tags',
     [query('productTagId').notEmpty().isNumeric()],
     authorize('read'),
-    async (req: Request, res: Response) => {
+    async (req: any, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             handleError(res, JSON.stringify(errors), 422, 'Delete product tag');
@@ -250,7 +258,8 @@ shopifyRouter.delete(
         try {
             if (req.query.productTagId) {
                 const productTag: ProductTag | undefined = await findProductTag(
-                    +req.query.productTagId
+                    +req.query.productTagId,
+                    req.user.store
                 );
                 if (productTag) {
                     removeProductTag(productTag);
@@ -282,7 +291,7 @@ shopifyRouter.delete(
     '/products',
     [query('productId').notEmpty().isNumeric()],
     authorize('read'),
-    async (req: Request, res: Response) => {
+    async (req: any, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             handleError(res, JSON.stringify(errors), 422, 'Delete product');
@@ -291,7 +300,8 @@ shopifyRouter.delete(
             if (req.query.productId) {
                 //+ parses string to number
                 const product: Product | undefined = await findProduct(
-                    +req.query.productId
+                    +req.query.productId,
+                    req.user.store
                 );
                 if (product) {
                     removeProduct(product);
