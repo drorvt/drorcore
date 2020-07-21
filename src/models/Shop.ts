@@ -1,6 +1,14 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    Column,
+    Entity,
+    ManyToMany,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    OneToMany
+} from 'typeorm';
 import { User } from './User';
 import { DbAwareColumn } from './DBColumnSupport';
+import { Product } from './Product';
 
 @Entity('shops', { schema: 'pdq' })
 export class Shop {
@@ -13,10 +21,12 @@ export class Shop {
     @Column('varchar', { name: 'url', nullable: true, length: 100 })
     url: string | null;
 
-    @DbAwareColumn({type: "timestamp",
-    name: 'created',
-    nullable: true,
-    default: () => 'CURRENT_TIMESTAMP'})
+    @DbAwareColumn({
+        type: 'timestamp',
+        name: 'created',
+        nullable: true,
+        default: () => 'CURRENT_TIMESTAMP'
+    })
     // @Column('timestamp', {
     //     name: 'created',
     //     nullable: true,
@@ -35,4 +45,7 @@ export class Shop {
 
     @ManyToMany(type => User, user => user.shops)
     users: User[];
+
+    @OneToMany(type => Product, product => product.shop)
+    products: Product[];
 }

@@ -25,8 +25,8 @@ export class Product {
 
     @Field(type => ID)
     @JoinColumn()
-    @ManyToOne(type => Shop)
-    shop:Shop;
+    @ManyToOne(type => Shop, shop => shop.products)
+    shop: Shop;
 
     @Column('varchar')
     @Field(type => String)
@@ -36,10 +36,12 @@ export class Product {
     @Field(type => String)
     productType: string | null;
 
-    @DbAwareColumn({type: "timestamp",
-    name: 'created',
-    nullable: true,
-    default: () => 'CURRENT_TIMESTAMP'})
+    @DbAwareColumn({
+        type: 'timestamp',
+        name: 'created',
+        nullable: true,
+        default: () => 'CURRENT_TIMESTAMP'
+    })
     updated: Date | null;
 
     @ManyToMany(type => ProductTag, productTag => productTag.products, {
