@@ -11,11 +11,11 @@ import {
 } from './product-tags.service';
 import Shopify from 'shopify-api-node';
 
-export async function saveProduct(product: Product):Promise<Product> {
+export async function saveProduct(product: Product): Promise<Product> {
     return getConnection().getRepository(Product).save(product);
 }
 
-export async function saveProductArr(products: Product[]) {
+export async function saveProductArr(products: Product[]): Promise<Product[]> {
     const productsRepository = getConnection().getRepository(Product);
     const dbProducts = await findProducts(
         products.map(product => product.shopifyId)
@@ -31,7 +31,7 @@ export async function saveProductArr(products: Product[]) {
             })
         );
     }
-    productsRepository.save(products);
+    return productsRepository.save(products);
 }
 
 export function removeProduct(product: Product) {
@@ -55,12 +55,12 @@ export function updateProduct(product: Product, newProduct: Product) {
         );
 }
 
-export async function getAllProducts(): Promise<Product[]> {
+export async function getAllProducts(shopName: string): Promise<Product[]> {
     logger.info('Get all products');
     const productCount = await countProducts();
     if (productCount == 0) {
         logger.info('No products in database. Resyncing.'); //TODO: add limit for resyncing.
-        await ShopifyService.syncShopify();
+        await ShopifyService.syncShopify(shopName);
     }
     const res = await getConnection()
         .getRepository(Product)
