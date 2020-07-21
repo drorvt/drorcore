@@ -3,6 +3,9 @@ import { createUser, addUserToShop } from '../src/services/user.service';
 import { User } from '../src/models/User';
 import { Shop } from '../src/models/Shop';
 import { Product } from '../src/models/Product';
+import { Order } from '../src/models/Order';
+import { OrderItem } from '../src/models/OrderItem';
+import { Carrier } from '../src/models/Carrier';
 import { syncShopify } from '../src/services/shopify.service';
 import { saveProduct } from '../src/services/products.service';
 import { createShop, getShop } from '../src/services/shop.service';
@@ -54,7 +57,7 @@ export const initDB = async () => {
     await executeQuery('create database ' + dbName);
 };
 
-export const buildDemoDB = async () => {
+export const buildDemoDB = async (): Promise<Shop> => {
     const user: User = new User();
     user.email = 'test@test.com';
     user.isAdmin = true;
@@ -68,16 +71,22 @@ export const buildDemoDB = async () => {
     shop.url = 'http://google.com';
     addUserToShop(user, shop);
 
-    await createShop(shop);
-    shop = await getShop(shop.name);
+    shop = await createShop(shop);
 
     if (shop){
         let product = new Product();
         product.name = "Fish";
-        product.shopId = shop.id;
+        product.shop = shop;
         product.shopifyId = 111;
-        saveProduct(product);
+        product = await saveProduct(product);
+
+        product = new Product();
+        product.name = "Dog";
+        product.shop = shop;
+        product.shopifyId = 112;
+        product = await saveProduct(product);        
     }
+    return shop;
 
 
 };

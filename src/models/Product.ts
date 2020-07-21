@@ -4,9 +4,14 @@ import {
     Entity,
     ManyToMany,
     PrimaryGeneratedColumn,
-    JoinTable
+    JoinTable,
+    JoinColumn,
+    OneToOne,
+    ManyToOne
 } from 'typeorm';
 import { ObjectType, Field, ID, Int } from 'type-graphql';
+import { DbAwareColumn } from './DBColumnSupport';
+import { Shop } from './Shop';
 
 @ObjectType()
 @Entity()
@@ -18,9 +23,10 @@ export class Product {
     @Field(type => Int)
     shopifyId: number;
 
-    @Column('int')
     @Field(type => ID)
-    shopId: number | null;
+    @JoinColumn()
+    @ManyToOne(type => Shop)
+    shop:Shop;
 
     @Column('varchar')
     @Field(type => String)
@@ -30,7 +36,10 @@ export class Product {
     @Field(type => String)
     productType: string | null;
 
-    @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
+    @DbAwareColumn({type: "timestamp",
+    name: 'created',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP'})
     updated: Date | null;
 
     @ManyToMany(type => ProductTag, productTag => productTag.products, {

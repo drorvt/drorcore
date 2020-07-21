@@ -4,6 +4,7 @@ import {
     Column,
     JoinColumn,
     PrimaryGeneratedColumn,
+    ManyToOne,
 } from 'typeorm';
 import { ObjectType, Field, ID, Int } from 'type-graphql';
 import { Product } from './Product';
@@ -16,13 +17,11 @@ export class OrderItem {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @OneToOne(type => Product)
-    @JoinColumn()
+    @ManyToOne(type => Product)
     @Field(type => Product)
     product: Product;
 
-    @OneToOne(type => Order)
-    @JoinColumn()
+    @ManyToOne(type => Order)
     @Field(type => Order)
     order: Order;
 
