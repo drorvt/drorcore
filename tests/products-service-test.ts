@@ -59,17 +59,17 @@ describe('Product creation', function () {
         product2.productTags?.push(parseShopifyProductTag('Tag1'));
         productArr.push(product1);
 
-        productArr = await saveProductArr(productArr);
+        productArr = await saveProductArr(productArr, shop);
         expect(productArr.length).to.be.greaterThan(1);
     });
 
     it('Should count all products in the database', function () {
-        const productCount = countProducts();
+        const productCount = countProducts(shop);
         expect(productCount).to.be.greaterThan(1);
     });
 
     it('Should return a product by its Shopify id or fail', async function () {
-        const product = await findProduct(111);
+        const product = await findProduct(111, shop);
         if (product) {
             expect(product.id).to.be.greaterThan(0);
         }
