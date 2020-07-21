@@ -63,11 +63,11 @@ export function updateProduct(product: Product, newProduct: Product) {
 
 export async function getAllProducts(shop: Shop): Promise<Product[]> {
     logger.info('Get all products');
-    // const productCount = await countProducts();
-    // if (productCount == 0) {
-    //     logger.info('No products in database. Resyncing.'); //TODO: add limit for resyncing.
-    //     await ShopifyService.syncShopify(shopName);
-    // }
+    const productCount = await countProducts(shop);
+    if (productCount == 0) {
+        logger.info('No products in database. Resyncing.'); //TODO: add limit for resyncing.
+        await ShopifyService.syncShopify(shop);
+    }
     const res = await getConnection()
         .getRepository(Product)
         .find({
