@@ -9,6 +9,7 @@ import {
 import { User } from './User';
 import { DbAwareColumn } from './DBColumnSupport';
 import { Product } from './Product';
+import { ProductTag } from './ProductTag';
 
 @Entity('shops', { schema: 'pdq' })
 export class Shop {
@@ -48,4 +49,7 @@ export class Shop {
 
     @OneToMany(type => Product, product => product.shop)
     products: Product[];
+
+    @OneToMany(type => ProductTag, productTag => productTag.shop)
+    productTags: ProductTag[];
 }
