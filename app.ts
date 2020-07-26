@@ -1,3 +1,4 @@
+import { userRouter } from './src/routes/user.router';
 import 'reflect-metadata';
 import express = require('express');
 require('dotenv').config();
@@ -15,7 +16,7 @@ const production: any = process.env.PRODOCTION;
 console.log('Production: ' + process.env.PRODOCTION);
 
 import { shopifyRouter } from './src/routes/shopify.router';
-import { userRouter } from './src/routes/user.router';
+import { orderRouter } from './src/routes/order.router';
 import { syncShopify } from './src/services/shopify.service';
 import { graphqlHTTP, GraphQLParams } from 'express-graphql';
 import expressPlayground from 'graphql-playground-middleware-express';
@@ -39,6 +40,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', userRouter);
+app.use('/orders', orderRouter);
 app.use('/shopify', shopifyRouter);
 
 app.all('/*', ensureAuthenticated);
