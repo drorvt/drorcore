@@ -5,9 +5,7 @@ import {Test} from "../models/Test";
 export class ProductManager{
 
     constructor(){
-        const con = createConnection().then((con) => {
-            console.log('created connection');
-        });
+
     }
 
     // async addTest(){

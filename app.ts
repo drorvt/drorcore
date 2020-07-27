@@ -23,19 +23,32 @@ import expressPlayground from 'graphql-playground-middleware-express';
 import { productsSchema } from './src/routes/product.graphql.route';
 import { GraphQLSchema } from 'graphql/type/schema';
 const { printSchema } = require('graphql');
+const RedisStore = require('connect-redis')(session);
+import { RedisClient, createClient } from "redis";
+import {globals} from './src/utils/globals';
 
 const app: express.Application = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+const redisClient:RedisClient = createClient(globals.redis);
+const store:any = new RedisStore({client:redisClient});
+store.client.on('error', (err:any) => {
+    logger.error(err);
+});
+store.on('error', (err:any) => {
+    logger.error(err);
+});
 app.use(
     session({
         secret: 'secrettexthere',
         saveUninitialized: true,
-        resave: true
+        resave: true,
+        store: store 
     })
 );
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -52,10 +65,6 @@ app.get('/', function (req, res) {
 app.use(express.static(path.join(__dirname, '/public')));
 
 const startServer = async () => {
-    // Initialize test Database
-    if (!production) {
-        await initDB();
-    }
 
     // app.use(
     //     '/productsql',
@@ -72,12 +81,7 @@ const startServer = async () => {
         );
     });
 
-    // .then(con => {
-    //     logger.info('info', 'created Database connection');
-    // });
-    // redundant "then"
 
-    
     if (process.env.DB == "sqlite"){
         await createConnection({
             type: 'sqlite',
@@ -85,12 +89,16 @@ const startServer = async () => {
             dropSchema: true,
             entities: ['../src/models/**/*.js', 'src/models/*.js'],
             synchronize: true,
-            logging: true
+            logging: false
         });
     } else{
+        if (!production) {
+            await initDB();
+        }        
         await createConnection();
     }
     logger.info('info', 'created Database connection');
+    // Initialize test Database
 
     // await syncShopify();
 
