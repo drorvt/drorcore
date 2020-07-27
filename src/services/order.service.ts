@@ -21,8 +21,14 @@ import {
 } from '../utils/query-utils';
 
 export const createOrder = async (order: Order) => {
-    return getConnection().manager.save(order);
+    return getConnection().getRepository(Order).save(order);
 };
+
+export async function createOrdersArr(
+    orders: Order[],
+): Promise<Order[]> {
+     return getConnection().getRepository(Order).save(orders);
+}
 
 export const addItemToOrder = async (
     order: Order,
