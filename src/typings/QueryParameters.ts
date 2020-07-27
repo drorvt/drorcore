@@ -1,14 +1,17 @@
 export class QueryParameters {
     page: number;
     maxResults: number;
-    filters: Filters;
+    filters: Filter[];
     search: string;
-    sortFields: SortFields;
+    sortFields: SortField[];
 }
-export class SortFields {
-    [fieldName: string]: 'ASC' | 'DESC' | 1 | -1 | undefined;
+export class SortField {
+    // [fieldName: string]: 'ASC' | 'DESC' | 1 | -1 | undefined;
+    fieldName: string;
+    value: 'ASC' | 'DESC' | undefined;
 }
 
-export class Filters {
-    [fieldName: string]: string[];
+export class Filter {
+    fieldName: string;
+    values: string[];
 }

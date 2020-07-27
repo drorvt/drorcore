@@ -4,13 +4,21 @@ import { OrderItem } from '../models/OrderItem';
 import { Carrier } from '../models/Carrier';
 import { Shop } from '../models/Shop';
 
-import { getConnection, FindOptionsUtils, FindConditions, In } from 'typeorm';
+import { getConnection } from 'typeorm';
+import { QueryParameters, Filter, SortField } from '../typings/QueryParameters';
+import _, { create, orderBy, upperFirst } from 'lodash';
 import {
-    QueryParameters,
-    SortFields,
-    Filters
-} from '../typings/QueryParameters';
-import _ from 'lodash';
+    BreakingChangeType,
+    GraphQLObjectType,
+    GraphQLDirective
+} from 'graphql';
+import { query } from 'express-validator';
+import {
+    createFilters,
+    createSortFields,
+    createPaging,
+    createFreeTextSearch
+} from '../utils/query-utils';
 
 export const createOrder = async (order: Order) => {
     return getConnection().manager.save(order);
@@ -40,24 +48,29 @@ export const getOrder = (id: number): Promise<Order | undefined> => {
         .findOne(id, { relations: ['items'] });
 };
 
+export function prepareGetOrdersQuery(
+    queryParameters: QueryParameters,
+    shop: Shop
+) {
+    // add shop filter:
+    if (shop.name) {
+        console.log(queryParameters.filters);
+        queryParameters.filters.push({
+            fieldName: 'shopId',
+            values: [shop.id.toString()]
+        });
+    }
+    const qb = getConnection().getRepository(Order).createQueryBuilder('order');
+    createFilters(queryParameters, qb);
+    createSortFields(queryParameters, qb);
+    createPaging(queryParameters, qb);
+    createFreeTextSearch(queryParameters, qb, ['address', 'serviceLevel']); //TODO: create getter method for free-text fields
+    console.log(qb.getQueryAndParameters());
+    return qb;
+}
 export function getOrders(
     queryParameters: QueryParameters,
     shop: Shop
 ): Promise<Order[]> {
-    return getConnection().getRepository(Order).find({
-        order: queryParameters.sortFields,
-        where: queryParameters.filters
-    });
-    // return getConnection()
-    //     .getRepository(Order)
-    //     .createQueryBuilder('order')
-    //     .where({ shop: shop })
-    //     .orderBy(
-    //         queryParameters.sortField.fieldName,
-    //         queryParameters.sortField.order
-    //     )
-    //     .where({})
-    //     .skip(queryParameters.maxResults * queryParameters.page)
-    //     .take(queryParameters.maxResults)
-    //     .getMany();
+    return prepareGetOrdersQuery(queryParameters, shop).getMany();
 }
