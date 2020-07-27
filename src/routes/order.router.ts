@@ -15,7 +15,7 @@ orderRouter.post(
     authorize('read'),
     async (req: Request<{}, {}, QueryParameters>, res: Response) => {
         try {
-            let params:QueryParameters = req.body;
+            let params: QueryParameters = req.body;
             console.dir(params);
             res.status(200).send(
                 await getOrders(params, (req as any).user.store)
@@ -26,17 +26,10 @@ orderRouter.post(
     }
 );
 
-
-orderRouter.get(
-    '/test',
-    authorize('read'),
-    async (req: any, res: Response) => {
-        try {
-            res.status(200).send(
-                "OK"
-            );
-        } catch (e) {
-            handleError(res, e.message, 404, 'Get orders');
-        }
+orderRouter.get('/test', authorize('read'), async (req: any, res: Response) => {
+    try {
+        res.status(200).send('OK');
+    } catch (e) {
+        handleError(res, e.message, 404, 'Get orders');
     }
-);
+});
