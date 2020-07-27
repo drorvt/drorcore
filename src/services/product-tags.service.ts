@@ -63,8 +63,10 @@ export async function findByProductTagNames(
     return res;
 }
 
-export function getAllProductTags(): Promise<ProductTag[]> {
-    return getConnection().getRepository(ProductTag).find();
+export function getAllProductTags(shop: Shop): Promise<ProductTag[]> {
+    return getConnection()
+        .getRepository(ProductTag)
+        .find({ where: { shop: shop } });
 }
 
 export async function getProductTagsByProductId(
