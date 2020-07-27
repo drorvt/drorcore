@@ -34,20 +34,56 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 const redisClient:RedisClient = createClient(globals.redis);
 const store:any = new RedisStore({client:redisClient});
-store.client.on('error', (err:any) => {
-    logger.error(err);
+
+let cacheInit = new Promise<Boolean>((resolve, reject) => {
+    redisClient.on('error', (err:any) => {
+        logger.error(err);
+        return reject(err);
+    });
+    store.on('error', (err:any) => {
+        logger.error(err);
+        return reject(err);
+    });
+    
+    redisClient.ping((err, res) => {
+        if (err){
+            logger.error(err);
+            return reject(err);
+        }else{
+            return resolve(true);
+        }
+    });
 });
-store.on('error', (err:any) => {
-    logger.error(err);
-});
-app.use(
-    session({
-        secret: 'secrettexthere',
-        saveUninitialized: true,
-        resave: true,
-        store: store 
-    })
-);
+
+const startServer = async () => {
+
+let cacheOk:Boolean;
+try{
+    cacheOk = await cacheInit;
+}
+catch(e){
+    cacheOk = false;
+}
+
+if (cacheOk){
+    app.use(
+        session({
+            secret: 'secrettexthere',
+            saveUninitialized: true,
+            resave: true,
+            store: store 
+        })
+    );
+}
+else{
+    app.use(
+        session({
+            secret: 'secrettexthere',
+            saveUninitialized: true,
+            resave: true
+        })
+    );
+}
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -64,7 +100,7 @@ app.get('/', function (req, res) {
 
 app.use(express.static(path.join(__dirname, '/public')));
 
-const startServer = async () => {
+
 
     // app.use(
     //     '/productsql',
