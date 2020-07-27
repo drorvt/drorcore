@@ -76,7 +76,20 @@ const startServer = async () => {
     //     logger.info('info', 'created Database connection');
     // });
     // redundant "then"
-    await createConnection();
+
+    
+    if (process.env.DB == "sqlite"){
+        await createConnection({
+            type: 'sqlite',
+            database: ':memory:',
+            dropSchema: true,
+            entities: ['../src/models/**/*.js', 'src/models/*.js'],
+            synchronize: true,
+            logging: true
+        });
+    } else{
+        await createConnection();
+    }
     logger.info('info', 'created Database connection');
 
     // await syncShopify();
