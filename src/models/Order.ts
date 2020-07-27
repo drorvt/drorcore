@@ -43,7 +43,7 @@ export class Order {
 
     @Field(type => Carrier)
     @JoinColumn()
-    @OneToOne(type => Carrier)
+    @ManyToOne(type => Carrier)
     recommendedCarrier: Carrier;
 
     @Field(type => Int)
