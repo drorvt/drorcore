@@ -9,6 +9,8 @@ import { Carrier } from '../src/models/Carrier';
 import { syncShopify } from '../src/services/shopify.service';
 import { saveProduct } from '../src/services/products.service';
 import { createShop, getShop } from '../src/services/shop.service';
+import { createOrdersArr, createCarrier } from '../src/services/order.service';
+import { random } from 'lodash';
 
 const fs = require('fs');
 const mysql = require('mysql');
@@ -57,6 +59,26 @@ export const initDB = async () => {
     await executeQuery('create database ' + dbName);
 };
 
+export async function createDemoOrders(shop: Shop) {
+    const ordersArr = [];
+    let carrier: Carrier = new Carrier();
+    carrier.name = 'Gett';
+    carrier = await createCarrier(carrier);
+    for (let i = 0; i < 200; i++) {
+        const order: Order = new Order();
+
+        order.recommendedCarrier = carrier;
+        order.address = 'Tel Aviv';
+        order.shop = shop;
+        order.radius = random(0, 100);
+        order.created = new Date();
+        order.expected = new Date();
+        ordersArr.push(order);
+    }
+
+    await createOrdersArr(ordersArr);
+}
+
 export const buildDemoDB = async (): Promise<Shop> => {
     const user: User = new User();
     user.email = 'test@test.com';
@@ -64,7 +86,7 @@ export const buildDemoDB = async (): Promise<Shop> => {
     user.password = 'xxx';
     await createUser(user);
 
-    let shop: Shop|undefined = new Shop();
+    let shop: Shop | undefined = new Shop();
     shop.apiKey = 'mykey';
     shop.name = 'demo shop';
     shop.secretKey = 'shhhh';
@@ -73,20 +95,20 @@ export const buildDemoDB = async (): Promise<Shop> => {
 
     shop = await createShop(shop);
 
-    if (shop){
+    await createDemoOrders(shop);
+
+    if (shop) {
         let product = new Product();
-        product.name = "Fish";
+        product.name = 'Fish';
         product.shop = shop;
         product.shopifyId = 111;
         product = await saveProduct(product);
 
         product = new Product();
-        product.name = "Dog";
+        product.name = 'Dog';
         product.shop = shop;
         product.shopifyId = 112;
-        product = await saveProduct(product);        
+        product = await saveProduct(product);
     }
     return shop;
-
-
 };
