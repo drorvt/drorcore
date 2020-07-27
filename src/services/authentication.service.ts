@@ -7,6 +7,7 @@ import { User } from '../models/User';
 import { Shop } from '../models/Shop';
 const bcrypt = require('bcryptjs');
 const uuid = require('uuid').uuidv5;
+import { cache } from '../utils/pdq.cache';
 
 export const ensureAuthenticated = (
     req: any,
@@ -18,6 +19,7 @@ export const ensureAuthenticated = (
         return;
     }
     if (req.isAuthenticated()) {
+        req.session.save();
         return next();
     } else {
         return res.redirect('/login.html');
@@ -70,7 +72,8 @@ passport.use(
                                     loggedInUser.roles.push('write');
                                 }
 
-                                usersMap['_' + loggedInUser.id] = loggedInUser;
+                                // usersMap['_' + loggedInUser.id] = loggedInUser;
+                                cache.add('_' + loggedInUser.id, loggedInUser);
                                 if (req?.body?.store) {
                                     if (user?.shops) {
                                         const shop:
@@ -93,6 +96,7 @@ passport.use(
                                     if (user.shops && user.shops.length == 1) {
                                         loggedInUser.store = user.shops[0];
                                     }
+                                    req.session.save();
                                     return done(null, loggedInUser);
                                 }
                             } else {
@@ -114,8 +118,10 @@ passport.serializeUser(function (user: LoggedInUser, done) {
 });
 
 passport.deserializeUser(function (id, done) {
-    const user: LoggedInUser = usersMap['_' + id];
-    done(null, user);
+    //const user: LoggedInUser = usersMap['_' + id];
+    cache.get('_' + id).then((cachedUser:any) => {
+        done(null, cachedUser);
+    });
 });
 
 export const usersMap: any = {};
