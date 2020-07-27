@@ -20,7 +20,7 @@ export class Order {
     @Field(type => ID)
     id: number;
 
-    @OneToMany(type => OrderItem, orderItem => orderItem.order, {eager: true})
+    @OneToMany(type => OrderItem, orderItem => orderItem.order, { eager: true })
     @JoinColumn()
     @Field(type => [OrderItem])
     items: OrderItem[];
@@ -31,17 +31,15 @@ export class Order {
     @Field(type => Shop)
     @JoinColumn()
     @ManyToOne(type => Shop)
-    shop:Shop;
+    shop: Shop;
 
-    @DbAwareColumn({type: "timestamp",
-    name: 'created',
-    nullable: true,
-    default: () => 'CURRENT_TIMESTAMP'})
+    @DbAwareColumn({
+        type: 'timestamp',
+        name: 'created',
+        nullable: true,
+        default: () => 'CURRENT_TIMESTAMP'
+    })
     created: Date | null;
-
-    timePassed(): string{
-        return "";
-    }
 
     @Field(type => Carrier)
     @JoinColumn()
@@ -49,14 +47,18 @@ export class Order {
     recommendedCarrier: Carrier;
 
     @Field(type => Int)
-    @Column( {default: () => 0})
+    @Column({ default: () => 0 })
     serviceLevel: number;
 
     @Field(type => Int)
-    @Column( {default: () => 0})
+    @Column({ default: () => 0 })
     radius: number;
 
     @Field(type => Date)
     @Column()
     expected: Date;
+
+    timePassed(): string {
+        return '';
+    }
 }
