@@ -164,26 +164,3 @@ export async function parseShopifyProduct(
     );
     return res;
 }
-
-// Copies the old product's id and any existing productTags into the new so TypeORM's
-// save method updates the object properly (instead of creating duplicates)
-export async function mergeProducts(
-    dbProduct: Product,
-    newProduct: Product
-): Promise<Product> {
-    newProduct.id = dbProduct.id;
-    const allProductTags = await getAllProductTags();
-    if (newProduct.productTags && dbProduct.productTags) {
-        newProduct.productTags = newProduct.productTags.map(newProductTag => {
-            const existingProductTag = allProductTags.find(
-                prodTag => prodTag.name == newProductTag.name
-            );
-            return existingProductTag ? existingProductTag : newProductTag;
-        });
-
-        // dbProduct.productTags == newProduct.productTags
-        //     ? newProduct.productTags
-        //     : dbProduct.productTags;
-    }
-    return newProduct;
-}
