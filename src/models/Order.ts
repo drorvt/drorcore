@@ -58,7 +58,9 @@ export class Order {
     @Column()
     expected: Date;
 
-    timePassed(): string {
-        return '';
+    timePassed(): number {
+        return this.created
+            ? (this.created?.getTime() - new Date().getTime()) / 1000 / 60
+            : 0;
     }
 }
