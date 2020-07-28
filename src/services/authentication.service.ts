@@ -74,15 +74,15 @@ passport.use(
 
                                 // usersMap['_' + loggedInUser.id] = loggedInUser;
                                 cache.add('_' + loggedInUser.id, loggedInUser);
-                                if (req?.body?.store) {
+                                if (req?.body?.shop) {
                                     if (user?.shops) {
                                         const shop:
                                             | Shop
                                             | undefined = user.shops.find(
-                                            shop => shop.name == req.body.store
+                                            shop => shop.name == req.body.shop
                                         );
                                         if (shop) {
-                                            loggedInUser.store = shop;
+                                            loggedInUser.shop = shop;
                                             loggedInUser;
                                             return done(null, loggedInUser);
                                         } else {
@@ -94,7 +94,7 @@ passport.use(
                                 } else {
                                     // Login user with no shop in the request. Set default shop if user has 1 shop
                                     if (user.shops && user.shops.length == 1) {
-                                        loggedInUser.store = user.shops[0];
+                                        loggedInUser.shop = user.shops[0];
                                     }
                                     req.session.save();
                                     return done(null, loggedInUser);
@@ -119,7 +119,7 @@ passport.serializeUser(function (user: LoggedInUser, done) {
 
 passport.deserializeUser(function (id, done) {
     //const user: LoggedInUser = usersMap['_' + id];
-    cache.get('_' + id).then((cachedUser:any) => {
+    cache.get('_' + id).then((cachedUser: any) => {
         done(null, cachedUser);
     });
 });

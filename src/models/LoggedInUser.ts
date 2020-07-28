@@ -3,7 +3,7 @@ import { Shop } from './Shop';
 export class LoggedInUser {
     userName: string | null;
     id: number;
-    store: Shop | undefined;
+    shop: Shop | undefined;
     loggedSince: Date;
     roles: Array<string> = ['read'];
 

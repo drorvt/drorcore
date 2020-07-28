@@ -43,7 +43,7 @@ shopifyRouter.get(
     authorize('read'),
     async (req: Request, res: Response) => {
         try {
-            res.status(200).send(await getAllProducts((req as any).user.store));
+            res.status(200).send(await getAllProducts((req as any).user.shop));
         } catch (e) {
             handleError(res, e.message, 404, 'Get all products');
         }
@@ -57,7 +57,7 @@ shopifyRouter.get(
     async (req: Request<{}, {}, number>, res: Response) => {
         try {
             const productTagId = req.body;
-            const shop: Shop = (req as any).user.store;
+            const shop: Shop = (req as any).user.shop;
             if (productTagId) {
                 const tags = await getProductsByTagId(productTagId, shop);
                 res.status(200).send(tags);
@@ -82,7 +82,7 @@ shopifyRouter.get(
     async (req: Request<{}, {}, number>, res: Response) => {
         try {
             const productId = req.body;
-            const shop: Shop = (req as any).user.store;
+            const shop: Shop = (req as any).user.shop;
             if (productId) {
                 const product: Product | undefined = await findProduct(
                     productId,
@@ -119,7 +119,7 @@ shopifyRouter.get(
     authorize('read'),
     async (req: Request, res: Response) => {
         try {
-            const shop: Shop = (req as any).user.store;
+            const shop: Shop = (req as any).user.shop;
             const tags = await getAllProductTags(shop);
             res.status(200).send(tags);
         } catch (e) {
@@ -135,7 +135,7 @@ shopifyRouter.get(
     async (req: Request<{}, {}, number>, res: Response) => {
         try {
             const productId = req.body;
-            const shop: Shop = (req as any).user.store;
+            const shop: Shop = (req as any).user.shop;
             if (productId) {
                 const tags = await getProductTagsByProductId(productId, shop);
                 res.status(200).send(tags);
@@ -162,7 +162,7 @@ shopifyRouter.post(
     async (req: Request, res: Response) => {
         try {
             const product: Product = req.body.product;
-            ShopifyService.syncProduct(product, (req as any).user.store);
+            ShopifyService.syncProduct(product, (req as any).user.shop);
         } catch (e) {
             handleError(res, e.message, 404, 'Sync Shopify product');
         }
@@ -176,7 +176,7 @@ shopifyRouter.post(
     async (req: Request, res: Response) => {
         try {
             const products: Product[] = req.body.products;
-            ShopifyService.syncProductArr(products, (req as any).user.store);
+            ShopifyService.syncProductArr(products, (req as any).user.shop);
         } catch (e) {
             handleError(res, e.message, 404, 'Sync Shopify products');
         }
@@ -190,7 +190,7 @@ shopifyRouter.post(
     authorize('read'),
     async (req: Request, res: Response) => {
         try {
-            await ShopifyService.syncShopify((req as any).user.store);
+            await ShopifyService.syncShopify((req as any).user.shop);
             res.status(200).send();
         } catch (e) {
             handleError(res, e.message, 404, 'Sync all shopify products');
@@ -206,7 +206,7 @@ shopifyRouter.delete(
     async (req: Request<{}, {}, number>, res: Response) => {
         try {
             const productTagId = req.body;
-            const shop: Shop = (req as any).user.store;
+            const shop: Shop = (req as any).user.shop;
             if (productTagId) {
                 const productTag: ProductTag | undefined = await findProductTag(
                     productTagId,
@@ -244,7 +244,7 @@ shopifyRouter.delete(
     async (req: Request<{}, {}, number>, res: Response) => {
         try {
             const productId = req.body;
-            const shop: Shop = (req as any).user.store;
+            const shop: Shop = (req as any).user.shop;
             if (productId) {
                 const product: Product | undefined = await findProduct(
                     productId,

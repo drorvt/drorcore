@@ -15,10 +15,10 @@ orderRouter.post(
     authorize('read'),
     async (req: Request<{}, {}, QueryParameters>, res: Response) => {
         try {
-            let params: QueryParameters = req.body;
+            const params: QueryParameters = req.body;
             console.dir(params);
             res.status(200).send(
-                await getOrders(params, (req as any).user.store)
+                await getOrders(params, (req as any).user.shop)
             );
         } catch (e) {
             handleError(res, e.message, 404, 'Get orders');
