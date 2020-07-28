@@ -7,6 +7,7 @@ import * as ProductTagsService from '../services/product-tags.service';
 import { logger } from '../utils/logger';
 import { getShopify } from '../managers/shopify.manager';
 import { Shop } from '../models/Shop';
+import { createOrdersArr, parseShopifyOrder } from './order.service';
 
 /**
  * In-Memory Store
@@ -20,6 +21,21 @@ import { Shop } from '../models/Shop';
 export async function syncShopify(shop: Shop) {
     // Consider using Bluebird for Promise.map
     const shopify = getShopify(shop);
+    await syncShopifyProducts(shopify, shop);
+    syncShopifyOrders(shopify, shop);
+    logger.info('Products synced with Shopify service');
+}
+
+export async function syncShopifyOrders(shopify: Shopify, shop: Shop) {
+    const orderList = await shopify.order.list();
+    await createOrdersArr(
+        await Promise.all(
+            orderList.map(shopifyOrder => parseShopifyOrder(shopifyOrder, shop))
+        )
+    );
+}
+
+export async function syncShopifyProducts(shopify: Shopify, shop: Shop) {
     const productList = await shopify.product.list();
 
     await ProductsService.saveProductArr(
@@ -30,7 +46,6 @@ export async function syncShopify(shop: Shop) {
         ),
         shop
     );
-    logger.info('Products synced with Shopify service');
 }
 
 //Sync single product

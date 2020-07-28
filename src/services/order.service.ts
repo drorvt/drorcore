@@ -20,6 +20,14 @@ import {
     createFreeTextSearch
 } from '../utils/query-utils';
 import { getShop } from './shop.service';
+import Shopify, { IOrderLineItem, IOrder } from 'shopify-api-node';
+import {
+    parseShopifyAddress,
+    parseShopifyOrderRadius
+} from '../utils/geo-utils';
+import { calculateDeliveryDateEstimate } from '../utils/date-utils';
+import { findProduct } from './products.service';
+import { calculateRecommendedCarrier } from './carrier.service';
 
 export const createOrder = async (order: Order) => {
     return getConnection().getRepository(Order).save(order);
@@ -41,10 +49,6 @@ export const addItemToOrder = async (
     return (orderItem = await getConnection()
         .getRepository(OrderItem)
         .save(orderItem));
-};
-
-export const createCarrier = async (carrier: Carrier): Promise<Carrier> => {
-    return getConnection().getRepository(Carrier).save(carrier);
 };
 
 export const getOrder = (id: number): Promise<Order | undefined> => {
@@ -85,4 +89,60 @@ export async function getOrders(
     shop: Shop
 ): Promise<Order[]> {
     return (await prepareGetOrdersQuery(queryParameters, shop)).getMany();
+}
+
+export async function parseShopifyOrder(
+    order: Shopify.IOrder,
+    shop: Shop
+): Promise<Order> {
+    const res = new Order();
+    res.shop = shop;
+    res.address = parseShopifyAddress(order.shipping_address);
+    res.radius = parseShopifyOrderRadius(order.shipping_address);
+    res.created = new Date(order.created_at);
+    res.expected = calculateDeliveryDateEstimate(order);
+    res.items = await parseShopifyItems(order.line_items, shop);
+    res.recommendedCarrier = await calculateRecommendedCarrier(order);
+    res.serviceLevel = parseServiceLevel(order);
+    return res;
+}
+export function parseServiceLevel(order: IOrder): number {
+    return 1;
+}
+
+export async function parseShopifyOrderItem(
+    item: IOrderLineItem,
+    shop: Shop
+): Promise<OrderItem> {
+    //TODO: Handle undefined fields
+    const res = new OrderItem();
+    if (item.product_id) {
+        const product = await findProduct(item.product_id, shop);
+        if (product) {
+            res.product = product;
+        } else {
+            throw new Error(
+                'No product found for item ' +
+                    item.id +
+                    '. Product ID: ' +
+                    item.product_id
+            );
+        }
+        res.amount = 1;
+    }
+    //TODO: Does TS wrap this in a promise?
+    return res;
+}
+
+export async function parseShopifyItems(
+    items: IOrderLineItem[],
+    shop: Shop
+): Promise<OrderItem[]> {
+    const res: OrderItem[] = [];
+    await Promise.all(
+        items.map(async shopifyItem =>
+            res.push(await parseShopifyOrderItem(shopifyItem, shop))
+        )
+    );
+    return res;
 }

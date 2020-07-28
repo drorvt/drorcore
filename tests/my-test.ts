@@ -9,8 +9,9 @@ import { Carrier } from '../src/models/Carrier';
 import { syncShopify } from '../src/services/shopify.service';
 import { saveProduct } from '../src/services/products.service';
 import { createShop, getShop } from '../src/services/shop.service';
-import { createOrdersArr, createCarrier } from '../src/services/order.service';
+import { createOrdersArr } from '../src/services/order.service';
 import { random } from 'lodash';
+import { createCarrier } from '../src/services/carrier.service';
 
 const fs = require('fs');
 const mysql = require('mysql');
