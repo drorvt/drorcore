@@ -4,7 +4,7 @@ import {
     Column,
     JoinColumn,
     PrimaryGeneratedColumn,
-    ManyToOne,
+    ManyToOne
 } from 'typeorm';
 import { ObjectType, Field, ID, Int } from 'type-graphql';
 import { Product } from './Product';
@@ -17,7 +17,7 @@ export class OrderItem {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => Product)
+    @ManyToOne(type => Product, product => product.shopifyId)
     @Field(type => Product)
     product: Product;
 
@@ -27,6 +27,5 @@ export class OrderItem {
 
     @Field(type => Int)
     @Column()
-    amount:number
-
+    amount: number;
 }
