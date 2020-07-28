@@ -19,15 +19,14 @@ import {
     createPaging,
     createFreeTextSearch
 } from '../utils/query-utils';
+import { getShop } from './shop.service';
 
 export const createOrder = async (order: Order) => {
     return getConnection().getRepository(Order).save(order);
 };
 
-export async function createOrdersArr(
-    orders: Order[],
-): Promise<Order[]> {
-     return getConnection().getRepository(Order).save(orders);
+export async function createOrdersArr(orders: Order[]): Promise<Order[]> {
+    return getConnection().getRepository(Order).save(orders);
 }
 
 export const addItemToOrder = async (
@@ -45,7 +44,7 @@ export const addItemToOrder = async (
 };
 
 export const createCarrier = async (carrier: Carrier): Promise<Carrier> => {
-    return getConnection().manager.save(carrier);
+    return getConnection().getRepository(Carrier).save(carrier);
 };
 
 export const getOrder = (id: number): Promise<Order | undefined> => {
@@ -54,12 +53,19 @@ export const getOrder = (id: number): Promise<Order | undefined> => {
         .findOne(id, { relations: ['items'] });
 };
 
-export function prepareGetOrdersQuery(
+export async function prepareGetOrdersQuery(
     queryParameters: QueryParameters,
-    shop: Shop
+    shop: Shop | undefined
 ) {
     // add shop filter:
-    if (shop.name) {
+    if (!shop) {
+        shop = await getShop('demo shop');
+    }
+    if (shop && shop.name) {
+        if (!queryParameters.filters) {
+            queryParameters.filters = [];
+        }
+
         console.log(queryParameters.filters);
         queryParameters.filters.push({
             fieldName: 'shopId',
@@ -70,13 +76,13 @@ export function prepareGetOrdersQuery(
     createFilters(queryParameters, qb);
     createSortFields(queryParameters, qb);
     createPaging(queryParameters, qb);
-    createFreeTextSearch(queryParameters, qb, ['address', 'serviceLevel']); //TODO: create getter method for free-text fields
+    createFreeTextSearch(queryParameters, qb); //TODO: create getter method for free-text fields
     console.log(qb.getQueryAndParameters());
     return qb;
 }
-export function getOrders(
+export async function getOrders(
     queryParameters: QueryParameters,
     shop: Shop
 ): Promise<Order[]> {
-    return prepareGetOrdersQuery(queryParameters, shop).getMany();
+    return (await prepareGetOrdersQuery(queryParameters, shop)).getMany();
 }

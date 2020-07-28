@@ -6,6 +6,7 @@ export function createFilter(filter: Filter): Brackets {
     return new Brackets(qb => {
         for (let i = 0; i < filter.values.length; i++) {
             const condition =
+                // tslint:disable-next-line: quotemark
                 filter.fieldName + ' = ' + "'" + filter.values[i] + "'";
             i == 0 ? qb.where(condition) : qb.orWhere(condition);
         }
@@ -26,16 +27,18 @@ export function createSortFields<T>(
     queryParameters: QueryParameters,
     qb: SelectQueryBuilder<T>
 ) {
-    for (let i = 0; i < queryParameters.sortFields.length; i++) {
-        i == 0
-            ? qb.orderBy(
-                  queryParameters.sortFields[i].fieldName,
-                  queryParameters.sortFields[i].value
-              )
-            : qb.addOrderBy(
-                  queryParameters.sortFields[i].fieldName,
-                  queryParameters.sortFields[i].value
-              );
+    if (queryParameters.sortFields) {
+        for (let i = 0; i < queryParameters.sortFields.length; i++) {
+            i == 0
+                ? qb.orderBy(
+                      queryParameters.sortFields[i].fieldName,
+                      queryParameters.sortFields[i].value
+                  )
+                : qb.addOrderBy(
+                      queryParameters.sortFields[i].fieldName,
+                      queryParameters.sortFields[i].value
+                  );
+        }
     }
 }
 
@@ -43,14 +46,14 @@ export function createPaging<T>(
     queryParameters: QueryParameters,
     qb: SelectQueryBuilder<T>
 ) {
-    qb.skip(queryParameters.maxResults * queryParameters.page);
-    qb.take(queryParameters.maxResults);
+    qb.skip((queryParameters.maxResults | 100) * (queryParameters.page | 0));
+    qb.take(queryParameters.maxResults | 100);
 }
 
 export function createFreeTextSearch<T>(
     queryParameters: QueryParameters,
     qb: SelectQueryBuilder<T>,
-    searchFields: string[]
+    searchFields: string[] = ['address']
 ) {
     if (searchFields.length == 0) {
         throw new Error(
@@ -65,8 +68,10 @@ export function createFreeTextSearch<T>(
             const condition =
                 searchFields[i] +
                 ' LIKE ' +
+                // tslint:disable-next-line: quotemark
                 "'%" +
                 queryParameters.search +
+                // tslint:disable-next-line: quotemark
                 "%'";
             i == 0 ? qb.where(condition) : qb.orWhere(condition);
         }
