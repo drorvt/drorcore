@@ -17,7 +17,7 @@ export const addUserToShop = async (user: User, shop: Shop) => {
             shop.users = [];
         }
         user.shops.push(shop);
-        await getConnection().manager.save([shop, user]);
+        await getConnection().getRepository(User).save(user);
     }
 };
 

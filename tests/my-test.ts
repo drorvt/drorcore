@@ -91,10 +91,12 @@ export const buildDemoDB = async (): Promise<Shop> => {
     shop.name = 'demo shop';
     shop.secretKey = 'shhhh';
     shop.url = 'http://google.com';
-    addUserToShop(user, shop);
+    await addUserToShop(user, shop);
 
-    shop = await createShop(shop);
-
+    shop = await getShop(shop.name);
+    if (!shop) {
+        throw new Error('No shop found for user ' + user);
+    }
     await createDemoOrders(shop);
 
     if (shop) {
