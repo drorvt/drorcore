@@ -1,21 +1,127 @@
+<!DOCTYPE html>
+
 <html>
-    <head>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    </head>
 
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
 
-    <script>
-        var input = {
-            page: 1,
-            maxResults: 100,
-            filters: [],
-            search: "",
-            sortFields: []
-        };
-
-        $.post( "/orders/getOrders", input)
-        .done(function( data ) {
-            alert( "Data Loaded: " + data );
+<!-- No filters -->
+<script>
+    var arr = [];
+    var queryParameters = {
+        page: 0,
+        maxResults: 100,
+        filters: [],
+        search: "",
+        sortFields: [],
+        shop: "demo shop"
+    };
+    $.post("/orders/getOrders", queryParameters)
+        .done(function (data) {
+            alert("Data Loaded: " + JSON.stringify(data));
         });
-    </script>
+
+</script>
+
+
+<!-- Sorting -->
+<script>
+    var input = {
+        page: 0,
+        maxResults: 100,
+        sortFields: [
+            {
+                fieldName: "radius",
+                value: "DESC"
+            }
+        ],
+        filters: [],
+        search: ""
+    };
+
+    $.post("/orders/getOrders", input)
+        .done(function (data) {
+            alert("Data Loaded: " + JSON.stringify(data));
+        });
+</script>
+
+<!-- Paging -->
+<script>
+    var input = {
+        page: 1,
+        maxResults: 100,
+        sortFields: [],
+        filters: [],
+        search: ""
+    };
+
+    $.post("/orders/getOrders", input)
+        .done(function (data) {
+            alert("Data Loaded: " + JSON.stringify(data));
+        });
+</script>
+
+<!-- Free text search -->
+<script>
+    var input = {
+        page: 0,
+        maxResults: 100,
+        sortFields: [],
+        filters: [],
+        search: "test"
+    };
+
+    $.post("/orders/getOrders", input)
+        .done(function (data) {
+            alert("Data Loaded: " + JSON.stringify(data));
+        });
+</script>
+
+<!-- Free text search -->
+<script>
+    var input = {
+        page: 0,
+        maxResults: 100,
+        sortFields: [],
+        filters: [],
+        search: "test"
+    };
+
+    $.post("/orders/getOrders", input)
+        .done(function (data) {
+            alert("Data Loaded: " + JSON.stringify(data));
+        });
+</script>
+
+<!-- Filters -->
+<script>
+    var input = {
+        page: 0,
+        maxResults: 100,
+        sortFields: [],
+        filters: [
+            {
+                fieldName: "address",
+                values: [
+                    "Tel Aviv"
+                ]
+            },
+            {
+                fieldName: "id",
+                values: [
+                    "11",
+                    "12"
+                ]
+            }
+        ],
+        search: ""
+    };
+
+    $.post("/orders/getOrders", input)
+        .done(function (data) {
+            alert("Data Loaded: " + JSON.stringify(data));
+        });
+</script>
+
 </html>
