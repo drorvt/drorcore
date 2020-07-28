@@ -9,7 +9,7 @@ import {
     PrimaryGeneratedColumn
 } from 'typeorm';
 import { Shop } from './Shop';
-import { DbAwareColumn } from './DBColumnSupport';7
+import { DbAwareColumn } from './DBColumnSupport';
 
 @Index('users_FK', ['shopId'], {})
 @Entity('users', { schema: 'pdq' })
@@ -40,13 +40,15 @@ export class User {
     //     nullable: true,
     //     default: () => 'CURRENT_TIMESTAMP'
     // })
-    @DbAwareColumn({type: "timestamp",
-    name: 'created',
-    nullable: true,
-    default: () => 'CURRENT_TIMESTAMP'})
+    @DbAwareColumn({
+        type: 'timestamp',
+        name: 'created',
+        nullable: true,
+        default: () => 'CURRENT_TIMESTAMP'
+    })
     created: Date | null;
 
-    @ManyToMany(type => Shop, shop => shop.users)
+    @ManyToMany(type => Shop, shop => shop.users, { cascade: true })
     @JoinTable()
     shops: Shop[];
 }
