@@ -2,7 +2,7 @@ import { getConnection, getRepository } from 'typeorm';
 import { Carrier } from '../models/Carrier';
 import { IOrder } from 'shopify-api-node';
 
-export async function createCarrier(carrier: Carrier): Promise<Carrier> {
+export async function saveCarrier(carrier: Carrier): Promise<Carrier> {
     return getConnection().getRepository(Carrier).save(carrier);
 }
 

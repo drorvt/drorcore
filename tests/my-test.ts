@@ -11,7 +11,7 @@ import { saveProduct } from '../src/services/products.service';
 import { createShop, getShop } from '../src/services/shop.service';
 import { createOrdersArr } from '../src/services/order.service';
 import { random } from 'lodash';
-import { createCarrier } from '../src/services/carrier.service';
+import { saveCarrier } from '../src/services/carrier.service';
 
 const fs = require('fs');
 const mysql = require('mysql');
@@ -64,7 +64,7 @@ export async function createDemoOrders(shop: Shop) {
     const ordersArr = [];
     let carrier: Carrier = new Carrier();
     carrier.name = 'Gett';
-    carrier = await createCarrier(carrier);
+    carrier = await saveCarrier(carrier);
     for (let i = 0; i < 200; i++) {
         const order: Order = new Order();
 

@@ -12,7 +12,7 @@ import { Shop } from '../src/models/Shop';
 import { OrderItem } from '../src/models/OrderItem';
 import { Product } from '../src/models/Product';
 import { QueryParameters } from '../src/typings/QueryParameters';
-import { createCarrier } from '../src/services/carrier.service';
+import { saveCarrier } from '../src/services/carrier.service';
 
 var shop: Shop;
 
@@ -37,14 +37,14 @@ describe('Order Creations', function () {
     it('Creates a Carrier', async () => {
         let carrier: Carrier = new Carrier();
         carrier.name = 'Fedex';
-        carrier = await createCarrier(carrier);
+        carrier = await saveCarrier(carrier);
         expect(carrier?.id).to.be.above(0);
     });
 
     it('Creates an empty Order', async () => {
         let carrier: Carrier = new Carrier();
         carrier.name = 'Fedex';
-        carrier = await createCarrier(carrier);
+        carrier = await saveCarrier(carrier);
 
         let order: Order = new Order();
         order.shop = shop;
@@ -58,7 +58,7 @@ describe('Order Creations', function () {
     it('Adds items to an Order', async () => {
         let carrier: Carrier = new Carrier();
         carrier.name = 'Fedex';
-        carrier = await createCarrier(carrier);
+        carrier = await saveCarrier(carrier);
 
         let order: Order = new Order();
         order.shop = shop;
@@ -80,7 +80,7 @@ describe('Order Creations', function () {
     it('Filter orders list', async function () {
         let carrier: Carrier = new Carrier();
         carrier.name = 'Fedex';
-        carrier = await createCarrier(carrier);
+        carrier = await saveCarrier(carrier);
 
         let order: Order = new Order();
         order.shop = shop;
